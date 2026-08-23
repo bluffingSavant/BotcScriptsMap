@@ -65,7 +65,6 @@ function renderPage(page) {
         // Chart.js (bar, doughnut, line...)
         chart.destroy();
       } else if (chart instanceof go.Diagram) {
-        // GoJS : pas de .destroy(), on détache le div pour libérer proprement
         chart.div = null;
       }
     });
@@ -76,11 +75,12 @@ function renderPage(page) {
     case 'dashboard': html = getDashboardHTML(); break;
     case 'homepage': html = getHomepageHTML(); break;
     case 'scriptsWeb': html = getScriptsWebHTML(); break;
+    case 'scriptSimilarity': html = getScriptsSimilarityHTML(); break;
     default: html = getScriptsWebHTML();
   }
   container.innerHTML = html;
   setTimeout(() => {
-    initPage(page); // pense aussi à utiliser initPage ici, pas initChartsForPage directement
+    initPage(page);
   }, 50);
 }
 

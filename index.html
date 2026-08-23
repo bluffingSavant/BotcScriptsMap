@@ -33,6 +33,11 @@
           <i class="fas fa-th-large w-5 text-indigo-500 dark:text-indigo-400"></i>
           <span>Homepage</span>
         </a>
+        <a href="#" onclick="switchPage('scriptSimilarity')"
+          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+          <i class="fas fa-th-large w-5 text-indigo-500 dark:text-indigo-400"></i>
+          <span>Script Similarity</span>
+        </a>
         <a href="#" onclick="switchPage('dashboard')"
           class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
           <i class="fas fa-chart-pie w-5 text-gray-400 dark:text-gray-500"></i>
@@ -52,7 +57,7 @@
       <div
         class="p-4 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 flex items-center space-x-2">
         <i class="fas fa-circle text-green-400 text-[8px]"></i>
-        <span>Online · v1.0</span>
+        <span>WIP · v0.5</span>
       </div>
     </aside>
 
@@ -67,9 +72,6 @@
             <i class="fas fa-bars text-xl"></i>
           </button>
           <h1 id="pageTitle" class="text-xl font-semibold text-gray-800 dark:text-gray-100">Dashboard</h1>
-          <span
-            class="hidden sm:inline-block text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 px-2 py-0.5 rounded-full">Last
-            30 days</span>
         </div>
         <div class="flex items-center space-x-4">
           <!-- Search icon (opens modal) -->
@@ -157,6 +159,7 @@
   <script src="modules/homepage.js"></script>
   <script src="modules/dashboard.js"></script>
   <script src="modules/scriptWeb.js"></script>
+  <script src="modules/scriptSimilarity.js"></script>
   <script src="main.js"></script>
 </body>
 
