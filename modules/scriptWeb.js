@@ -8,7 +8,7 @@ function getScriptsWebHTML() {
         <div id="statsWindow" bg-white dark:bg-[#1f2937] style="width: 100%;height: 600px; solid #ccc; overflow-y: auto;"></div>
     </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
-      <div id="myList" style="width: 100%; border: 1px solid #ccc; overflow-y: auto;"></div>
+      <div id="myList" style="width: 100%;"></div>
     </section>
   `;
 }
@@ -402,6 +402,7 @@ function updateScriptsList() {
     openBtn.style.marginLeft = "8px";
     openBtn.style.padding = "2px 8px";
     openBtn.style.fontSize = "12px";
+    openBtn.style.fontColor = "#000"
     openBtn.style.borderRadius = "4px";
     openBtn.style.border = "1px solid #ccc";
     openBtn.style.cursor = "pointer";
