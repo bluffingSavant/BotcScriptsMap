@@ -223,7 +223,6 @@ def parse_script(script_id, data):
         content = data
 
         meta = meta_from_contents(content)
-
         if meta is None:
 
             print(
@@ -241,9 +240,10 @@ def parse_script(script_id, data):
 
         return {
             "pk": int(script_id),
+            "script_id": meta["script_id"],
+            "version": meta["version"] ,
             "title": meta["name"],
             "author": meta["author"],
-            "score": 0,
             "characters": ids_from_contents(content),
             "content": content,
         }
@@ -267,12 +267,15 @@ def parse_script(script_id, data):
 
     title = data.get("name") or meta["name"]
     author = data.get("author") or meta["author"]
+    version = data.get("version") or meta["version"]
+    script_id_original = data.get("script_id") or meta.get("script_id")
 
     return {
         "pk": data.get("pk", int(script_id)),
+        "script_id_original": script_id_original,
+        "version": version,
         "title": title,
         "author": author,
-        "score": data.get("score", 0),
         "characters": ids_from_contents(content),
         "content": content,
         "version": data.get("version"),
@@ -376,20 +379,20 @@ def download_all_scripts():
     script_ids = []
 
     for item in first_results:
-
         script_ids.append(
             str(item["pk"])
         )
+        
 
     # --------------------------------------------------------
     # Pages restantes
     # --------------------------------------------------------
-    pages_to_fetch = min(num_pages+1,20)
-    for page in range(2, pages_to_fetch):
+    #pages_to_fetch = min(num_pages+1,3)
+    for page in range(2, num_pages):
 
         print(
             f"\nRécupération page "
-            f"{page}/{pages_to_fetch}..."
+            f"{page}/{num_pages}..."
         )
 
         try:
@@ -439,7 +442,7 @@ def download_all_scripts():
         )
 
         output_file = (
-            OUTPUT_DIR /
+            OUTPUT_DIR / "individual_scripts" /
             f"{script_id}.json"
         )
 
@@ -475,7 +478,6 @@ def download_all_scripts():
             else:
 
                 continue
-
         script = download_script(
             script_id
         )

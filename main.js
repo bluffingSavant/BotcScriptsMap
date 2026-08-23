@@ -1,5 +1,5 @@
 // ===== STATE =====
-let currentPage = 'homepage';
+let currentPage = 'scriptsWeb';
 let darkMode = localStorage.getItem('darkMode') === 'true' || false;
 let chartsInitialized = {};
 // ===== DARK MODE =====
@@ -111,7 +111,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   //document.getElementById('mainContent').innerHTML = getDashboardHTML();
 
   // 2. charger les données
-  await Promise.all([loadScriptsData(), loadRolesData()]);
+  await Promise.all([loadScriptsData(), loadRolesData(), getScriptsData()]);
 
   // 3. mettre à jour les stats et les graphiques
   updateDashboardStats();

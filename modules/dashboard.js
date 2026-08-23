@@ -40,11 +40,11 @@ function getTop(array, nb_values){
 }
 
 let rolesData = null;
-let scriptsData = null;
+let scriptsDataCounts = null;
 let totalScripts = 0;
 
 async function loadScriptsData() {
-  if (scriptsData) return scriptsData;
+  if (scriptsDataCounts) return scriptsDataCounts;
 
   try {
     const response = await fetch("botc_scripts/all_scripts.json");
@@ -63,12 +63,12 @@ async function loadScriptsData() {
       }
     }
 
-    scriptsData = counts;
-    return scriptsData;
+    scriptsDataCounts = counts;
+    return scriptsDataCounts;
   } catch (err) {
     console.error("Erreur lors du chargement de scriptsData:", err);
-    scriptsData = {};
-    return scriptsData;
+    scriptsDataCounts = {};
+    return scriptsDataCounts;
   }
 }
 
@@ -110,7 +110,7 @@ function initChartsForPage(page) {
   if (!window.chartInstances) window.chartInstances = {};
   const barCtx = document.getElementById('barChartDash');
   if (barCtx) {
-    const topValues = getTop(scriptsData, 10);
+    const topValues = getTop(scriptsDataCounts, 10);
     const teamColors = {
       townsfolk: '#93c5fd', // bleu clair
       outsider: '#1e3a8a',  // bleu foncé

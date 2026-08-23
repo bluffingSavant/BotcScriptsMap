@@ -1,35 +1,66 @@
 function getScriptsWebHTML() {
+  //<section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
   return `
+    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-0 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+      <div id="scriptsWebDiv" style="height: 600px;"></div>
+      <div class="flex items-center justify-between">
+        <!-- Stats should be put here -->
+        <div id="statsWindow" bg-white dark:bg-[#1f2937] style="width: 100%;height: 600px; solid #ccc; overflow-y: auto;"></div>
+    </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
-      <h4 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">Script web</h4>
-      <div id="scriptsWebDiv" style="width: 100%; height: 600px;"></div>
       <div id="myList" style="width: 100%; border: 1px solid #ccc; overflow-y: auto;"></div>
     </section>
   `;
 }
 
+let scriptsData = null;
+let scriptsByCharacter = {};
+
+function buildScriptsByCharacter() {
+  scriptsByCharacter = {};
+  scriptsData.forEach(script => {
+    script.characters.forEach(charId => {
+      if (!scriptsByCharacter[charId]) scriptsByCharacter[charId] = [];
+      scriptsByCharacter[charId].push(script);
+    });
+  });
+}
+async function getScriptsData() {
+  if (scriptsData) return scriptsData;
+  const response = await fetch("botc_scripts/all_scripts.json");
+  if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+  const jsonData = await response.json();
+  scriptsData = jsonData;
+  
+}
+
+
 async function getLinks() {
   const counts = {};
+  const scriptsOfPair = {};
   try {
-    const response = await fetch("botc_scripts/all_scripts.json");
-    if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
-    const jsonData = await response.json();
-    const scripts = jsonData.map(item => item.characters);
+    //const response = await fetch("botc_scripts/all_scripts.json");
+    //if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+    //const jsonData = await response.json();
+
+    const scripts = scriptsData.map(item => {return [item.characters, item.pk]});
 
     for (let index = 0; index < scripts.length; index++) {
-      const list_of_char = scripts[index];
+      const list_of_char = scripts[index][0];
       for (let i = 0; i < list_of_char.length; i++) {
         for (let j = i + 1; j < list_of_char.length; j++) {
           const character1 = list_of_char[i];
           const character2 = list_of_char[j];
           const pairKey = [character1, character2].sort().join('-');
           counts[pairKey] = (counts[pairKey] || 0) + 1;
+          scriptsOfPair[pairKey] = scriptsOfPair[pairKey] || [];
+          scriptsOfPair[pairKey].push(scripts[index][1]); // Store the index of the script where this pair appears
         }
       }
     }
     const newMap = Object.entries(counts);
     const sortedMap = newMap.sort((item1, item2) => item2[1] - item1[1]);
-    return sortedMap;
+    return [sortedMap, scriptsOfPair];
   } catch (err) {
     console.error("Erreur lors du chargement des liens:", err);
     return {};
@@ -82,6 +113,7 @@ function makeCurvedTextDataUri(text, diameter, opts = {}) {
 // ===== ÉTAT GLOBAL (cache + sélection courante) =====
 let allTokens = [];
 let allLinks = [];
+let scriptsOfPair = {};
 let selectedCharacters = new Set();
 
 const TEAM_COLORS = {
@@ -107,7 +139,7 @@ const TEAM_LABELS = {
 
 async function initScriptsWeb(page) {
   if (!window.chartInstances) window.chartInstances = {};
-
+  getScriptsData();
   const div = document.getElementById('scriptsWebDiv');
   if (!div) return;
 
@@ -117,7 +149,8 @@ async function initScriptsWeb(page) {
   diagram.layout = new go.ForceDirectedLayout({
     defaultElectricalCharge: 50, defaultSpringLength: 20
   });
-
+  diagram.allowCopy = false;
+  diagram.initialScale = 0.5
   diagram.nodeTemplate =
     new go.Node("Spot", { locationSpot: go.Spot.Center })
       .add(
@@ -157,15 +190,17 @@ async function initScriptsWeb(page) {
       );
 
   if (allTokens.length === 0) {
-    const [tokens, links] = await Promise.all([getCharacters(), getLinks()]);
+    const [tokens, [links,scriptsOfPair]] = await Promise.all([getCharacters(), getLinks()]);
     allTokens = tokens;
     allLinks = links;
-    //selectedCharacters = new Set(tokens.slice(0, 10).map(t => t.id));
+    allScriptsOfPair = scriptsOfPair;
+    selectedCharacters = new Set(tokens.slice(0, 3).map(t => t.id));
   }
 
   window.chartInstances.scriptsWeb = diagram;
-
+  buildScriptsByCharacter();
   renderCharacterLists(diagram);
+  renderScriptsList(diagram);
   updateGraph(diagram);
 
   function animateStars() {
@@ -212,10 +247,11 @@ function updateGraph(diagram) {
     })
     .map(([pair, count]) => {
       const [ch1, ch2] = pair.split('-');
-      return { from: ch1, to: ch2, thickness: count / 10, label: count };
+      return { from: ch1, to: ch2, thickness: 8, label: count };
     });
   diagram.model = new go.GraphLinksModel(keys, links);
 }
+
 
 function renderCharacterLists(diagram) {
   const listDiv = document.getElementById("myList");
@@ -243,8 +279,8 @@ function renderCharacterLists(diagram) {
     heading.style.marginBottom = '6px';
     column.appendChild(heading);
 
-    const charactersInTeam = allTokens.filter(c => c.team === team);
-
+    const charactersInTeam = allTokens.filter(c => c.team === team)
+                                      .sort((a, b) => a.id.localeCompare(b.id));;
     charactersInTeam.forEach(character => {
       const item = document.createElement("div");
       item.textContent = character.id;
@@ -264,6 +300,7 @@ function renderCharacterLists(diagram) {
         }
         applyToggleStyle(item, team);
         updateGraph(diagram);
+        updateScriptsList();
       };
 
       column.appendChild(item);
@@ -277,11 +314,116 @@ function renderCharacterLists(diagram) {
     diagram.selection.each(part => {
       if (part instanceof go.Node) selectedNodeKeys.add(part.data.key);
     });
+  });
+}
 
-    listDiv.querySelectorAll('[data-key]').forEach(child => {
+function renderScriptsList(diagram) {
+  const statsDiv = document.getElementById("statsWindow");
+  if (!statsDiv) return;
+
+  statsDiv.style.display = 'flex';
+  statsDiv.style.gap = '16px';
+  statsDiv.style.alignItems = 'flex-start';
+
+  // Ce listener n'est attaché qu'une seule fois
+  diagram.addDiagramListener("ChangedSelection", () => {
+    const selectedNodeKeys = new Set();
+    diagram.selection.each(part => {
+      if (part instanceof go.Node) selectedNodeKeys.add(part.data.key);
+    });
+
+    statsDiv.querySelectorAll('[data-key]').forEach(child => {
       child.style.outline = selectedNodeKeys.has(child.dataset.key)
         ? "2px solid orange"
         : "none";
     });
   });
+
+  updateScriptsList();
 }
+
+function scriptsContainingAll(charIds) {
+  if (charIds.length === 0) return [];
+  const sets = charIds.map(c => scriptsByCharacter[c] || []);
+  const [first, ...rest] = sets;
+  return first.filter(script =>
+    rest.every(set => set.some(s => s.script_id_original === script.script_id_original))
+  );
+}
+
+function updateScriptsList() {
+  const statsDiv = document.getElementById("statsWindow");
+  if (!statsDiv) return;
+  statsDiv.innerHTML = '';
+
+  const chars = [...selectedCharacters];
+  if (chars.length < 2) return; // rien à afficher pour 0 ou 1 personnage
+
+  const scripts = scriptsContainingAll(chars);
+  if (scripts.length === 0) return;
+
+  const groupName = [...chars].sort().join(' + ');
+
+  const column = document.createElement('div');
+  column.style.flex = '1';
+  column.style.minWidth = '0';
+  column.style.borderRadius = '10px';
+  column.style.padding = '10px';
+  column.style.border = '1px solid #ddd';
+
+  const heading = document.createElement('h5');
+  heading.textContent = '▼ ' + groupName;
+  heading.style.fontWeight = 'bold';
+  heading.style.marginBottom = '6px';
+  heading.style.cursor = 'pointer';
+  heading.style.userSelect = 'none';
+
+  const scriptsContainer = document.createElement('div');
+  scriptsContainer.style.display = 'block'; // ouvert par défaut, un seul groupe
+
+  scripts.forEach(script => {
+    const item = document.createElement("div");
+    item.style.display = "flex";
+    item.style.alignItems = "center";
+    item.style.justifyContent = "space-between";
+    item.style.padding = "8px";
+    item.style.cursor = "pointer";
+    item.style.borderRadius = "6px";
+    item.style.marginBottom = "4px";
+    item.style.userSelect = "none";
+    item.dataset.key = script.id;
+
+    const label = document.createElement("span");
+    label.textContent = script.title;
+    item.appendChild(label);
+
+    const openBtn = document.createElement("button");
+    openBtn.textContent = "open";
+    openBtn.style.marginLeft = "8px";
+    openBtn.style.padding = "2px 8px";
+    openBtn.style.fontSize = "12px";
+    openBtn.style.borderRadius = "4px";
+    openBtn.style.border = "1px solid #ccc";
+    openBtn.style.cursor = "pointer";
+    openBtn.style.background = "#fff";
+    openBtn.onclick = (e) => {
+      e.stopPropagation();
+      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
+      window.open(url, "_blank");
+    };
+    item.appendChild(openBtn);
+
+    scriptsContainer.appendChild(item);
+  });
+
+  heading.onclick = () => {
+    const isOpen = scriptsContainer.style.display === 'block';
+    scriptsContainer.style.display = isOpen ? 'none' : 'block';
+    heading.textContent = (isOpen ? '▶ ' : '▼ ') + groupName;
+  };
+
+  column.appendChild(heading);
+  column.appendChild(scriptsContainer);
+  statsDiv.appendChild(column);
+}
+
