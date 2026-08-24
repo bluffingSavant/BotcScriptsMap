@@ -221,7 +221,6 @@ async function initScriptsWeb() {
 function applyToggleStyle(item, team) {
   const isSelected = selectedCharacters.has(item.dataset.key);
   item.style.backgroundColor = isSelected ? TEAM_COLORS[team] : "";
-  item.style.color = isSelected ? "white" : "";
 }
 
 // ===== Reconstruit le modèle GoJS à partir de selectedCharacters =====
@@ -271,6 +270,7 @@ function renderCharacterLists(diagram) {
                                       .sort((a, b) => a.id.localeCompare(b.id));;
     charactersInTeam.forEach(character => {
       const item = document.createElement("div");
+      item.style.color = "#fff"
       item.textContent = character.id;
       item.dataset.key = character.id;
       item.style.padding = "8px";
@@ -363,6 +363,7 @@ function updateScriptsList() {
   heading.textContent = '▼ ' + groupName;
   heading.style.fontWeight = 'bold';
   heading.style.marginBottom = '6px';
+  heading.style.color = "#fff"
   heading.style.cursor = 'pointer';
   heading.style.userSelect = 'none';
 
@@ -376,6 +377,7 @@ function updateScriptsList() {
     item.style.justifyContent = "space-between";
     item.style.padding = "8px";
     item.style.cursor = "pointer";
+    item.style.color = "#fff"
     item.style.borderRadius = "6px";
     item.style.marginBottom = "4px";
     item.style.userSelect = "none";
@@ -390,6 +392,7 @@ function updateScriptsList() {
     openBtn.style.marginLeft = "8px";
     openBtn.style.padding = "2px 8px";
     openBtn.style.fontSize = "12px";
+    openBtn.style.color = "#000"
     openBtn.style.borderRadius = "4px";
     openBtn.style.border = "1px solid #ccc";
     openBtn.style.cursor = "pointer";

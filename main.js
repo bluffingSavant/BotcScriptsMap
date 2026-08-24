@@ -54,6 +54,14 @@ function switchPage(page) {
   });
 }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+}
+
 // ===== RENDER PAGES =====
 function renderPage(page) {
   const container = document.getElementById('pageContent');
@@ -92,6 +100,9 @@ function initPage(page) {
     initChartsForPage();
   } else if (page === 'character combinations') {
     initScriptsWeb();
+  }
+  else if (page === 'scriptSimilarity') {
+    initSlider();
   }
 }
 

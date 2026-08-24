@@ -5,7 +5,9 @@ function getDashboardHTML() {
     <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
       <div class="bg-white dark:bg-[#1f2937] p-5 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 col-span-1 xl:col-span-2 card-hover">
         <div class="flex items-rr justify-between mb-3"><h4 class="font-semibold text-gray-700 dark:text-gray-200">Top 5 characters</h4></div>
-        <div class="chart-container"><canvas id="barChartDash" style="width:100%;height:100%;"></canvas></div>
+        <div class="chart-container chart-container--dashboard">
+            <canvas id="barChartDash" style="width:100%;height:100%;"></canvas>
+        </div>
       </div>
     </section>
   `;

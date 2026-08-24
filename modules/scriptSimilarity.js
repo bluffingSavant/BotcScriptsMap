@@ -1,43 +1,44 @@
 function getScriptsSimilarityHTML() {
   return `
-    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-6 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    
+    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-5 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+        
         <div id="TB" onclick="selectScript('TB')"
             class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover flex items-center justify-center">
             <img src="icons/scripts/TB_logo.webp"
                 alt="Trouble Brewing"
-                class="max-h-32 w-auto object-contain">
+                class="max-h-64 w-auto object-contain">
         </div>
 
         <div id="BMR" onclick="selectScript('BMR')"
             class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover flex items-center justify-center">
             <img src="icons/scripts/BMR_logo.webp"
                 alt="Bad Moon Rising"
-                class="max-h-32 w-auto object-contain">
+                class="max-h-64 w-auto object-contain">
         </div>
 
         <div id="SnV" onclick="selectScript('SnV')"
             class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover flex items-center justify-center">
             <img src="icons/scripts/SnV_logo.webp"
                 alt="Sects and Violets"
-                class="max-h-32 w-auto object-contain">
+                class="max-h-64 w-auto object-contain">
         </div>
-        <div id="similarityDiv"
-            class="col-span-3 bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
-            
+        <div id="similarityDiv" class="col-span-2 bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
             <div class="flex items-center justify-between mb-2">
-                <h4 class="font-semibold text-gray-700 dark:text-gray-200">
-                    Scripts Similarity
-                </h4>
-                <i class="fas fa-ellipsis-h text-gray-300 dark:text-gray-600"></i>
+                <h4 class="font-semibold text-gray-700 dark:text-gray-200">Scripts Similarity</h4>
+                <p class="font-semibold text-gray-700 dark:text-gray-200">Value: <span id="demo"></span></p>
+                <div class="slidecontainer">
+                    <input type="range" min="1" max="100" value="90" class="slider" id="slider">
+                </div>
             </div>
-
-            <div class="chart-container">
-                <canvas id="similarityChart" style="width:100%; height:100%;"></canvas>
+            <div class="chart-container chart-container--similarity" id="chartContainer">
+                <canvas id="similarityChart" style="width:100%;"></canvas>
             </div>
+            <div id="similarityList" class="flex flex-col gap-1" style="height: 250px; overflow-y: auto;"></div>
         </div>
     </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
-      <div id="displayAreaDiv" style="width: 100%; height: 600px;">
+      <div id="displayAreaDiv" style="width: 100%">
         <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">Choose a base script to display similar scripts.</h3>
         <section class="grid grid-cols-4 sm:grid-cols-4 xl:grid-cols-4 gap-6">
             <div id="TFDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
@@ -47,7 +48,17 @@ function getScriptsSimilarityHTML() {
         </section>
       </div>
     </section>
+    
+
   `;
+}
+
+function initSlider(){
+    var slider = document.getElementById("slider");
+    var valText = document.getElementById("demo");
+    slider.oninput = function() {
+    valText.innerHTML = this.value + "%";
+    }
 }
 
 function findSimilarScripts(script) {
@@ -62,11 +73,14 @@ function findSimilarScripts(script) {
     }
     script_a = scriptContent.characters;
     mostSimilar = []
+    
+    var slider = document.getElementById("slider");
+    threshold = slider.value
     for (let index = 0; index < scriptsData.length; index++) {
         script_b = scriptsData[index].characters
         if (script_a === script_b) { continue; }
         IoU = jaccard(script_a,script_b)
-        if (IoU > 0.9) {
+        if (IoU > threshold/100) {
             const [added, removed] = difference(script_a, script_b)
             mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
         }
@@ -76,43 +90,51 @@ function findSimilarScripts(script) {
 }
 
 function selectScript(script) {
+    base3 = ['TB','SnV','BMR']
+    base3.forEach(curr_script => {
+        if (script===curr_script) {
+            const selectedScript = document.getElementById(script)
+            selectedScript.style.outline = 'rgb(236, 215, 18) solid 2px';
+        }
+        else {
+            const selectedScript = document.getElementById(curr_script)
+            selectedScript.style.outline = null;
+        }
+    });
     updateText(script)
     updateSimilar(script)
 }
 
 function updateSimilar(script) {
     mostSimilar = findSimilarScripts(script)
-    const similarityDiv = document.getElementById('similarityDiv')
 
-    if (!similarityDiv.dataset.originalHeight) {
-        similarityDiv.dataset.originalHeight = similarityDiv.offsetHeight + 'px';
-    }
+    const chartContainer = document.getElementById('chartContainer');
+    const listContainer = document.getElementById('similarityList');
 
-    similarityDiv.innerHTML = '';
-    similarityDiv.style.maxHeight = similarityDiv.dataset.originalHeight;
-    similarityDiv.style.overflowY = 'auto';
+    chartContainer.style.display = 'none';
+    listContainer.innerHTML = '';
 
     mostSimilar.forEach(script => {
-        const scriptItem = document.createElement("div")
+        const scriptItem = document.createElement("div");
         scriptItem.style.minWidth = '0';
         scriptItem.style.cursor = "pointer";
         scriptItem.style.border = "1px solid #ccc";
         scriptItem.style.padding = "2px 8px";
         scriptItem.style.borderRadius = "4px";
-        str = getString(script)
+        scriptItem.style.color = "#fff";
+        const str = getString(script);
         scriptItem.textContent = script[0].title + ' (' + script[1]*100 + '%) - ' + str;
-        similarityDiv.appendChild(scriptItem);
+        listContainer.appendChild(scriptItem);
         scriptItem.onclick = (e) => {
             e.stopPropagation();
-            compareScripts(script[0], script[4], script[2], script[3])
-        }
-    })
+            compareScripts(script[0], script[4], script[2], script[3]);
+        };
+    });
 }
 
 function getString(script) {
     addString = ""
     removeString = ""
-    console.log(script[2], script[3])
     if (script[2].length == 0) { addString = ""}
     else { addString = "Adds: " + script[2]}
     if (script[3].length == 0) { removeString = ""}
@@ -186,6 +208,7 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         charItem.style.minWidth = '0';
         charItem.style.borderRadius = '10px';
         charItem.style.padding = '10px';
+        charItem.style.color = '#fff';
         charItem.textContent = char;
 
         if (isAdded) {
