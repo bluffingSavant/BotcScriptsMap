@@ -1,5 +1,5 @@
 // ===== STATE =====
-let currentPage = 'scriptsWeb';
+let currentPage = 'homepage';
 let darkMode = localStorage.getItem('darkMode') === 'true' || false;
 let chartsInitialized = {};
 // ===== DARK MODE =====
@@ -72,11 +72,11 @@ function renderPage(page) {
   }
   let html = '';
   switch (page) {
-    case 'dashboard': html = getDashboardHTML(); break;
     case 'homepage': html = getHomepageHTML(); break;
-    case 'scriptsWeb': html = getScriptsWebHTML(); break;
+    case 'dashboard': html = getDashboardHTML(); break;
+    case 'character combinations': html = getScriptsWebHTML(); break;
     case 'scriptSimilarity': html = getScriptsSimilarityHTML(); break;
-    default: html = getScriptsWebHTML();
+    default: html = getHomepageHTML();
   }
   container.innerHTML = html;
   setTimeout(() => {
@@ -85,10 +85,13 @@ function renderPage(page) {
 }
 
 function initPage(page) {
-  if (page === 'dashboard') {
-    initChartsForPage('dashboard');
-  } else if (page === 'scriptsWeb') {
-    initScriptsWeb('scriptsWeb');
+  if (page == 'homepage') {
+    initHomePage();
+  }
+  else if (page === 'dashboard') {
+    initChartsForPage();
+  } else if (page === 'character combinations') {
+    initScriptsWeb();
   }
 }
 
@@ -104,17 +107,14 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+let allTokens = [];
+let totalScripts = 0;
 
 // Au chargement de la page
 window.addEventListener('DOMContentLoaded', async () => {
-  // 1. injecter le HTML du dashboard dans le DOM (à adapter selon ton code existant)
-  //document.getElementById('mainContent').innerHTML = getDashboardHTML();
-
-  // 2. charger les données
-  await Promise.all([loadScriptsData(), loadRolesData(), getScriptsData()]);
-
-  // 3. mettre à jour les stats et les graphiques
+  await Promise.all([loadRolesData(), getScriptsData(), getCharacters()]);
+  await Promise.all([ getLinks(), loadScriptsData()]);
   updateDashboardStats();
-  initChartsForPage('dashboard');
-  initScriptsWeb('scriptsWeb');
+  initChartsForPage();
+  initScriptsWeb();
 });

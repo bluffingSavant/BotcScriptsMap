@@ -41,19 +41,11 @@ function getTop(array, nb_values){
 
 let rolesData = null;
 let scriptsDataCounts = null;
-let totalScripts = 0;
-
 async function loadScriptsData() {
   if (scriptsDataCounts) return scriptsDataCounts;
 
   try {
-    const response = await fetch("botc_scripts/all_scripts.json");
-    if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
-    const jsonData = await response.json();
-
-    totalScripts = jsonData.length; // <- nombre total de scripts extraits
-
-    const scripts = jsonData.map(item => item.characters);
+    const scripts = scriptsData.map(item => item.characters);
     const counts = {};
     for (let index = 0; index < scripts.length; index++) {
       const list_of_char = scripts[index];
@@ -62,7 +54,6 @@ async function loadScriptsData() {
         counts[character] = (counts[character] || 0) + 1;
       }
     }
-
     scriptsDataCounts = counts;
     return scriptsDataCounts;
   } catch (err) {
@@ -105,7 +96,7 @@ async function loadRolesData() {
 }
 
 
-function initChartsForPage(page) {
+function initChartsForPage() {
   if (!window.chartInstances) window.chartInstances = {};
   const barCtx = document.getElementById('barChartDash');
   if (barCtx) {

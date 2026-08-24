@@ -31,7 +31,7 @@ async function getScriptsData() {
   if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
   const jsonData = await response.json();
   scriptsData = jsonData;
-  
+  totalScripts = scriptsData.length;
 }
 
 
@@ -39,10 +39,6 @@ async function getLinks() {
   const counts = {};
   const scriptsOfPair = {};
   try {
-    //const response = await fetch("botc_scripts/all_scripts.json");
-    //if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
-    //const jsonData = await response.json();
-
     const scripts = scriptsData.map(item => {return [item.characters, item.pk]});
 
     for (let index = 0; index < scripts.length; index++) {
@@ -60,10 +56,10 @@ async function getLinks() {
     }
     const newMap = Object.entries(counts);
     const sortedMap = newMap.sort((item1, item2) => item2[1] - item1[1]);
-    return [sortedMap, scriptsOfPair];
+    allLinks = sortedMap;
+    allScriptsOfPair = scriptsOfPair;
   } catch (err) {
-    console.error("Erreur lors du chargement des liens:", err);
-    return {};
+    console.error("Error while loading links between characters:", err);
   }
 }
 
@@ -72,7 +68,7 @@ async function getCharacters() {
     const roles = await fetch("official_data/roles.json")
       .then(response => response.json())
       .then(json => json.map(item => ({ id: item.id, team: item.team })));
-    return roles;
+    allTokens = roles;
   } catch (err) {
     console.error("Erreur lors du chargement de rolesData:", err);
     return [];
@@ -111,7 +107,6 @@ function makeCurvedTextDataUri(text, diameter, opts = {}) {
 }
 
 // ===== ÉTAT GLOBAL (cache + sélection courante) =====
-let allTokens = [];
 let allLinks = [];
 let scriptsOfPair = {};
 let selectedCharacters = new Set();
@@ -137,7 +132,7 @@ const TEAM_LABELS = {
   demon: 'Demon'
 };
 
-async function initScriptsWeb(page) {
+async function initScriptsWeb() {
   if (!window.chartInstances) window.chartInstances = {};
   getScriptsData();
   const div = document.getElementById('scriptsWebDiv');
@@ -189,13 +184,7 @@ async function initScriptsWeb(page) {
         .bind("text", "label")
       );
 
-  if (allTokens.length === 0) {
-    const [tokens, [links,scriptsOfPair]] = await Promise.all([getCharacters(), getLinks()]);
-    allTokens = tokens;
-    allLinks = links;
-    allScriptsOfPair = scriptsOfPair;
-    selectedCharacters = new Set(tokens.slice(0, 3).map(t => t.id));
-  }
+  selectedCharacters = new Set(allTokens.slice(0, 3).map(t => t.id));
 
   window.chartInstances.scriptsWeb = diagram;
   buildScriptsByCharacter();
@@ -256,7 +245,6 @@ function updateGraph(diagram) {
 function renderCharacterLists(diagram) {
   const listDiv = document.getElementById("myList");
   listDiv.innerHTML = '';
-
   listDiv.style.display = 'flex';
   listDiv.style.gap = '16px';
   listDiv.style.alignItems = 'flex-start';
@@ -402,7 +390,6 @@ function updateScriptsList() {
     openBtn.style.marginLeft = "8px";
     openBtn.style.padding = "2px 8px";
     openBtn.style.fontSize = "12px";
-    openBtn.style.fontColor = "#000"
     openBtn.style.borderRadius = "4px";
     openBtn.style.border = "1px solid #ccc";
     openBtn.style.cursor = "pointer";
