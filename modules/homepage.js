@@ -23,8 +23,9 @@ function initHomePage() {
         <li>Script similarity: Find most similar scripts to the Base 3 and see what changes from the base script.</li>
         <li>Character combinations: Find scripts where all the requested characters appear.</li>
       </ul>
-      
-      This is still Work In Progress and suggestions are welcome on the reddit thread -> 
+      <br />
+      This is still Work In Progress and suggestions are welcome on the <a href=https://www.reddit.com/r/BloodOnTheClocktower/comments/1vx09zu/a_new_tool_to_find_scripts/><span style='color: red;'>reddit thread<span style='color: red;'></a>.<br />
+      Last update of the database: 23 August 2026
     `;
   }
 }
