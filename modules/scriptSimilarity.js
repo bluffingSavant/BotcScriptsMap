@@ -167,7 +167,6 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         document.getElementById(id).innerHTML = '';
     });
 
-    // Union des perso de base + perso ajoutés = liste complète à afficher
     const fullList = [...new Set([...baseScript.characters, ...(added || [])])];
 
     fullList.forEach(char => {

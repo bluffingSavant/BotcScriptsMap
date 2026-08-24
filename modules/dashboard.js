@@ -53,7 +53,7 @@ function updateDashboardStats() {
 
 
 function getTeam(character) {
-  if (!rolesData) return "other"; // pas encore chargé
+  if (!rolesData) return "other";
   const role = rolesData.find(r => r.id === character);
   return role ? role.team : "other";
 }
@@ -82,11 +82,11 @@ function initChartsForPage() {
   if (barCtx) {
     const topValues = getTop(scriptsDataCounts, 10);
     const teamColors = {
-      townsfolk: '#93c5fd', // bleu clair
-      outsider: '#1e3a8a',  // bleu foncé
-      minion: '#fca5a5',    // rouge clair
-      demon: '#991b1b',     // rouge foncé
-      fabled: '#cea624',      // gris, au cas où
+      townsfolk: '#93c5fd',
+      outsider: '#1e3a8a',
+      minion: '#fca5a5',
+      demon: '#991b1b',
+      fabled: '#cea624',
       loric: '#168a2f'
     };
 

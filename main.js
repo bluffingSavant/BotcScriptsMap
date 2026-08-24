@@ -100,7 +100,6 @@ function initPage(page) {
 applyDarkMode();
 renderPage('homepage');
 
-// close dropdown on escape
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.getElementById('profileDropdown')?.classList.add('hidden');
@@ -110,7 +109,6 @@ document.addEventListener('keydown', (e) => {
 let allTokens = [];
 let totalScripts = 0;
 
-// Au chargement de la page
 window.addEventListener('DOMContentLoaded', async () => {
   await Promise.all([loadRolesData(), getScriptsData(), getCharacters()]);
   await Promise.all([ getLinks(), loadScriptsData()]);
