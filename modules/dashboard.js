@@ -1,31 +1,11 @@
 function getDashboardHTML() {
   return `
-    <!-- stats -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-      <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
-        <div class="flex items-center justify-between"><div><p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Total Tokens</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">{48,295}</h3><span class="inline-flex items-center text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full mt-1"><i class="fas fa-arrow-up mr-1"></i> 12.5%</span></div><div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400"><i class="fas fa-dollar-sign text-2xl"></i></div></div>
-      </div>
-      <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
-        <div class="flex items-center justify-between"><div><p class="text-sm text-gray-400 dark:text-gray-500 font-medium">New Users</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">1,283</h3><span class="inline-flex items-center text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full mt-1"><i class="fas fa-arrow-up mr-1"></i> 8.1%</span></div><div class="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400"><i class="fas fa-user-plus text-2xl"></i></div></div>
-      </div>
-      <div>
-            <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Total Scripts</p>
-            <h3 id="statTotalScripts" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">–</h3>
-      </div>
-      <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
-        <div class="flex items-center justify-between"><div><p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Conversion</p><h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">3.24%</h3><span class="inline-flex items-center text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-full mt-1"><i class="fas fa-arrow-up mr-1"></i> 1.2%</span></div><div class="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400"><i class="fas fa-percent text-2xl"></i></div></div>
-      </div>
     </section>
     <!-- charts -->
     <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
       <div class="bg-white dark:bg-[#1f2937] p-5 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 col-span-1 xl:col-span-2 card-hover">
         <div class="flex items-rr justify-between mb-3"><h4 class="font-semibold text-gray-700 dark:text-gray-200">Top 5 characters</h4></div>
         <div class="chart-container"><canvas id="barChartDash" style="width:100%;height:100%;"></canvas></div>
-      </div>
-      <div class="bg-white dark:bg-[#1f2937] p-5 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 card-hover">
-        <div class="flex items-center justify-between mb-2"><h4 class="font-semibold text-gray-700 dark:text-gray-200">Devices</h4><i class="fas fa-ellipsis-h text-gray-300 dark:text-gray-600"></i></div>
-        <div class="chart-container"><canvas id="doughnutDash" style="width:100%;height:100%;"></canvas></div>
-        <div class="flex justify-center gap-4 text-xs mt-2 text-gray-500 dark:text-gray-400"><span><span class="inline-block w-2 h-2 rounded-full bg-indigo-500 mr-1"></span> Mobile</span><span><span class="inline-block w-2 h-2 rounded-full bg-cyan-400 mr-1"></span> Desktop</span><span><span class="inline-block w-2 h-2 rounded-full bg-amber-400 mr-1"></span> Tablet</span></div>
       </div>
     </section>
   `;

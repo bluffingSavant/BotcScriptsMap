@@ -38,7 +38,7 @@ function getScriptsSimilarityHTML() {
     </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="displayAreaDiv" style="width: 100%; height: 600px;">
-        <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">This is placeholder text.</h3>
+        <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">Choose a base script to display similar scripts.</h3>
         <section class="grid grid-cols-4 sm:grid-cols-4 xl:grid-cols-4 gap-6">
             <div id="TFDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
             <div id="OutsidersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
@@ -48,14 +48,6 @@ function getScriptsSimilarityHTML() {
       </div>
     </section>
   `;
-}
-
-
-function initScriptSimilarity(page) {
-    if (!window.chartInstances) window.chartInstances = {};
-    const TBdiv = document.getElementById('TB');
-    if (!TBdiv) return;
-
 }
 
 function findSimilarScripts(script) {
@@ -135,7 +127,7 @@ function updateText(script) {
     else if (script == 'BMR') scriptContent = scriptsData.filter(s => s.title == "Bad Moon Rising")[0]
     else if (script == 'SnV') scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0]
 
-    displayAreaDiv.textContent = script;
+    displayAreaDiv.textContent = scriptContent.title;
     renderCharacterList(scriptContent);
 }
 

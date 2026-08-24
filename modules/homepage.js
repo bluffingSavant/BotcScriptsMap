@@ -24,6 +24,8 @@ function initHomePage() {
         <li>Script similarity: Find most similar scripts to the Base 3 and see what changes from the base script.</li>
         <li>Character combinations: Find scripts where all the requested characters appear.</li>
       </ul>
+      
+      This is still Work In Progress and suggestions are welcome on the reddit thread -> 
     `;
   }
 }
