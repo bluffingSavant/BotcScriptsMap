@@ -24,6 +24,17 @@ function getScriptsSimilarityHTML() {
                 class="max-h-64 w-auto object-contain">
         </div>
         <div id="similarityDiv" class="col-span-2 bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+            <label class="toggle">
+                <input type="checkbox" id="btnTravellers" name="btnToggle" />
+                <span class="slider bg-white">Include travellers</span>
+            </label>
+            <label class="toggle">
+                <input type="checkbox" id="btnLoric" name="btnToggle" />
+                <span class="slider bg-white">Include Lorics</span>
+            </label><label class="toggle">
+                <input type="checkbox" id="btnFabled" name="btnToggle" />
+                <span class="slider bg-white">Include Fabled</span>
+            </label>
             <div class="flex items-center justify-between mb-2">
                 <h4 class="font-semibold text-gray-700 dark:text-gray-200">Scripts Similarity</h4>
                 <p class="font-semibold text-gray-700 dark:text-gray-200">Value: <span id="demo"></span></p>
@@ -31,6 +42,7 @@ function getScriptsSimilarityHTML() {
                     <input type="range" min="1" max="100" value="90" class="slider" id="slider">
                 </div>
             </div>
+            
             <div class="chart-container chart-container--similarity" id="chartContainer">
                 <canvas id="similarityChart" style="width:100%;"></canvas>
             </div>
@@ -56,6 +68,48 @@ function getScriptsSimilarityHTML() {
 
   `;
 }
+let currentScript = null;
+
+function selectScript(script) {
+    currentScript = script;
+    base3 = ['TB','SnV','BMR']
+    base3.forEach(curr_script => {
+        if (script===curr_script) {
+            const selectedScript = document.getElementById(script)
+            selectedScript.style.outline = 'rgb(236, 215, 18) solid 2px';
+        }
+        else {
+            const selectedScript = document.getElementById(curr_script)
+            selectedScript.style.outline = null;
+        }
+    });
+    updateText(script)
+    updateSimilar(script)
+}
+
+function initTeamToggles() {
+    ['btnTravellers', 'btnLoric', 'btnFabled'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+            if (currentScript) {
+                updateSimilar(currentScript);
+            }
+        });
+    });
+}
+
+function debounce(fn, delay) {
+    let timer;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+const debouncedUpdateSimilar = debounce(() => {
+    if (currentScript) {
+        updateSimilar(currentScript);
+    }
+}, 100);
 
 function initSlider(){
     var slider = document.getElementById("slider");
@@ -63,7 +117,8 @@ function initSlider(){
     var valText = document.getElementById("demo");
     valText.textContent = slider.value + "%";
     slider.oninput = function() {
-    valText.innerHTML = this.value + "%";
+        valText.innerHTML = this.value + "%";
+        debouncedUpdateSimilar();
     }
 }
 
@@ -77,16 +132,20 @@ function findSimilarScripts(script) {
     else if (script == 'SnV'){
         scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0]
     }
-    script_a = scriptContent.characters;
+
+    const excludedTeams = getExcludedTeams();
+    script_a = filterCharactersByTeam(scriptContent.characters, excludedTeams);
     mostSimilar = []
     
     var slider = document.getElementById("slider");
     threshold = slider.value
     for (let index = 0; index < scriptsData.length; index++) {
-        script_b = scriptsData[index].characters
+        script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams)
         if (script_a === script_b) { continue; }
         IoU = jaccard(script_a,script_b)
+        if (IoU === 1) {continue;} // Avoid exact same script to appear.
         if (IoU > threshold/100) {
+            console.log(IoU)
             const [added, removed] = difference(script_a, script_b)
             mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
         }
@@ -144,16 +203,25 @@ function getString(script) {
     if (script[2].length == 0) { addString = ""}
     else { addString = "Adds: " + script[2]}
     if (script[3].length == 0) { removeString = ""}
-    else { removeString = " / Removes: " + script[3]}
+    else { removeString = " -- Removes: " + script[3]}
     return addString + removeString
 }
 
 function updateText(script) {
     const displayAreaDiv = document.getElementById('textDiv')
     let scriptContent;
-    if (script == 'TB') scriptContent = scriptsData.filter(s => s.title == "Trouble Brewing")[0]
-    else if (script == 'BMR') scriptContent = scriptsData.filter(s => s.title == "Bad Moon Rising")[0]
-    else if (script == 'SnV') scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0]
+    if (script == 'TB') {
+        scriptContent = scriptsData.filter(s => s.title == "Trouble Brewing")[0];
+        scriptContent.characters.push("scapegoat", "gunslinger", "beggar", "bureaucrat", "thief")
+    }
+    else if (script == 'BMR') {
+        scriptContent = scriptsData.filter(s => s.title == "Bad Moon Rising")[0];
+        scriptContent.characters.push("butcher", "bonecollector", "harlot", "barista", "deviant")
+    }
+    else if (script == 'SnV') {
+        scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0];
+        scriptContent.characters.push("apprentice", "matron", "voudon", "judge", "bishop")
+    }
 
     displayAreaDiv.textContent = scriptContent.title;
     renderCharacterList(scriptContent);
@@ -163,6 +231,21 @@ function compareScripts(newScript, baseScript, added, removed) {
     const displayAreaDiv = document.getElementById('textDiv')
     displayAreaDiv.textContent = baseScript.title + ' → ' + newScript.title;
     renderCharacterList(baseScript, added, removed);
+}
+
+function getExcludedTeams() {
+    const excluded = new Set();
+    if (!document.getElementById('btnTravellers').checked) excluded.add('traveller');
+    if (!document.getElementById('btnLoric').checked) excluded.add('loric');
+    if (!document.getElementById('btnFabled').checked) excluded.add('fabled');
+    return excluded;
+}
+
+function filterCharactersByTeam(characters, excludedTeams) {
+    return characters.filter(charId => {
+        const team = allTokens.filter(c => c.id === charId).map(c => c.team)[0];
+        return !excludedTeams.has(team);
+    });
 }
 
 function jaccard(script_a, script_b) {
@@ -204,7 +287,7 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         else if (charTeam == 'outsider') div = document.getElementById('OutsidersDiv');
         else if (charTeam == 'minion') div = document.getElementById('MinionDiv');
         else if (charTeam == 'demon') div = document.getElementById('DemonDiv');
-        else if (charTeam == 'travellers') div = document.getElementById('TravellersDiv');
+        else if (charTeam == 'traveller') div = document.getElementById('TravellersDiv');
         else if (charTeam == 'loric') div = document.getElementById('LoricDiv');
         else if (charTeam == 'fabled') div = document.getElementById('FabledDiv');
         if (!div) return;
@@ -213,11 +296,11 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         const isRemoved = (removed || []).includes(char);
 
         const charItem = document.createElement("div")
+        charItem.style.color = '#fff'
         charItem.style.flex = '1';
         charItem.style.minWidth = '0';
         charItem.style.borderRadius = '10px';
         charItem.style.padding = '10px';
-        charItem.style.color = '#fff';
         charItem.textContent = char;
 
         if (isAdded) {
@@ -234,8 +317,12 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         } else {
             charItem.style.backgroundColor = TEAM_BG_COLORS[charTeam];
             charItem.style.border = `1px solid ${TEAM_COLORS[charTeam]}`;
+            if (charTeam === "traveller") {
+                charItem.style.backgroundImage = TRAVELLER_GRADIENT_BG;
+                charItem.style.border = "2px solid transparent";
+                charItem.style.borderImage = TRAVELLER_GRADIENT_BORDER;
+            }
         }
-
         div.appendChild(charItem);
     });
 }

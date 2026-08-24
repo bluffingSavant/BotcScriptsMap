@@ -1,6 +1,6 @@
 function getScriptsWebHTML() {
   return `
-    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-0 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="scriptsWebDiv" style="height: 600px;"></div>
       <div class="flex flex-col justify-between" style="height: 600px;">
         <h4 class="font-semibold text-gray-700 dark:text-gray-200 items-center justify-center" id="combination"></h4>
@@ -9,7 +9,7 @@ function getScriptsWebHTML() {
       </div>
     </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
-      <div id="myList" style="width: 100%;"></div>
+      <div id="myList" style="width: 100%"></div>
     </section>
   `;
 }
@@ -119,8 +119,10 @@ const TEAM_COLORS = {
   demon: '#991b1b',  
   loric: '#35b90d',
   fabled: '#c2c50b',
-  traveller: ""
+  traveller: 'linear-gradient(to left, rgba(255,0,0,1) 50%, rgba(0,0,255,1) 50%)'
 };
+const TRAVELLER_GRADIENT_BG = "linear-gradient(to left, rgba(255,0,0,0.15) 50%, rgba(0,0,255,0.15) 50%)";
+const TRAVELLER_GRADIENT_BORDER = "linear-gradient(to left, red 50%, blue 50%) 1";
 
 const TEAM_BG_COLORS = {
   townsfolk: 'rgba(147, 197, 253, 0.15)',
@@ -129,7 +131,7 @@ const TEAM_BG_COLORS = {
   demon: 'rgba(153, 27, 27, 0.15)',
   loric: '#1341054f',
   fabled: '#4b4d064d',
-  traveller: ""
+  traveller: 'linear-gradient(to left, rgba(255,0,0,0.2) 50%, rgba(0,0,255,0.2) 50%)'
 };
 
 const TEAM_LABELS = {
@@ -232,7 +234,7 @@ function applyToggleStyle(item, team) {
   const isSelected = selectedCharacters.has(item.dataset.key);
   item.style.backgroundColor = isSelected ? TEAM_COLORS[team] : "";
   if (team === "traveller") { 
-    item.style.backgroundImage = isSelected ? "linear-gradient(to left, rgba(255,0,0,1) 50%, rgba(0,0,255,1) 50%)": "";
+    item.style.backgroundImage = isSelected ? TEAM_COLORS[team] : "";
   }
 }
 
@@ -260,23 +262,40 @@ function renderCharacterLists(diagram) {
   listDiv.style.display = 'flex';
   listDiv.style.gap = '16px';
   listDiv.style.alignItems = 'flex-start';
-
   const teams = ['townsfolk', 'outsider', 'minion', 'demon', 'traveller', 'loric', 'fabled'];
 
   teams.forEach(team => {
     const column = document.createElement('div');
     column.style.flex = '1';
     column.style.minWidth = '0';
+    column.style.height = "400px";
+    column.style.overflowY ="auto";
     column.style.backgroundColor = TEAM_BG_COLORS[team];
-    if (team === "traveller") { column.style.backgroundImage = "linear-gradient(to left, rgba(255,0,0,0.2) 50%, rgba(0,0,255,0.2) 50%)";}
     column.style.border = `1px solid ${TEAM_COLORS[team]}`;
+    if (team === "traveller") { 
+      column.style.backgroundImage = TEAM_BG_COLORS[team];
+    }
     column.style.borderRadius = '10px';
     column.style.padding = '10px';
 
     const heading = document.createElement('h5');
     heading.textContent = TEAM_LABELS[team];
+    heading.style.textAlign = "center";
+    if (team === "traveller") {
+      heading.textContent = '';
+      const mid = Math.floor(TEAM_LABELS[team].length / 2);
+      const firstHalf = document.createElement('span');
+      firstHalf.textContent = TEAM_LABELS[team].slice(0, mid);
+      firstHalf.style.color = 'blue';
+
+      const secondHalf = document.createElement('span');
+      secondHalf.textContent = TEAM_LABELS[team].slice(mid);
+      secondHalf.style.color = 'red';
+
+      heading.appendChild(firstHalf);
+      heading.appendChild(secondHalf);
+    }
     heading.style.color = TEAM_COLORS[team];
-    if (team === "traveller") { heading.style.color = "linear-gradient(to left, rgb(255, 0, 0) 50%, rgb(0,0,255) 50%)";}
     heading.style.fontWeight = 'bold';
     heading.style.marginBottom = '6px';
     column.appendChild(heading);
@@ -287,6 +306,7 @@ function renderCharacterLists(diagram) {
       const item = document.createElement("div");
       item.style.color = "#fff"
       item.textContent = character.id;
+      item.style.textAlign = "center";
       item.dataset.key = character.id;
       item.style.padding = "8px";
       item.style.cursor = "pointer";
@@ -360,6 +380,7 @@ function updateScriptsList() {
   statsDiv.innerHTML = '';
   
   const heading = document.getElementById('combination');
+  heading.style.textAlign = "center";
   const chars = [...selectedCharacters];
   if (chars.length < 2) {
     heading.textContent = 'Please select at least 2 characters.';
@@ -388,27 +409,40 @@ function updateScriptsList() {
   heading.style.fontWeight = 'bold';
   heading.style.marginBottom = '6px';
   heading.style.color = "#fff"
-  heading.style.cursor = 'pointer';
   heading.style.userSelect = 'none';
 
   const scriptsContainer = document.createElement('div');
 
   scripts.forEach(script => {
     const item = document.createElement("div");
-    item.style.display = "flex";
+    item.style.display = "grid";
+    item.style.gridTemplateColumns = "1fr auto";
     item.style.alignItems = "center";
-    item.style.justifyContent = "space-between";
     item.style.padding = "8px";
-    item.style.cursor = "pointer";
     item.style.color = "#fff"
     item.style.borderRadius = "6px";
     item.style.marginBottom = "4px";
     item.style.userSelect = "none";
     item.dataset.key = script.id;
 
+    const textGroup = document.createElement("div");
+    textGroup.style.display = "grid";
+    textGroup.style.gridTemplateColumns = "400px 1fr";
+    textGroup.style.alignItems = "baseline";
+    textGroup.style.gap = "8px";
+
     const label = document.createElement("span");
+    const author = document.createElement("span");
     label.textContent = script.title;
-    item.appendChild(label);
+    label.style.fontWeight = "bold";
+    label.style.overflow = "hidden";
+    label.style.textOverflow = "ellipsis";
+    label.style.whiteSpace = "nowrap";
+    author.textContent = "by " + script.author;
+
+    textGroup.appendChild(label);
+    textGroup.appendChild(author);
+    item.appendChild(textGroup);
 
     const openBtn = document.createElement("button");
     openBtn.textContent = "open";
