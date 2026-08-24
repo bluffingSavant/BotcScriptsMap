@@ -40,12 +40,16 @@ function getScriptsSimilarityHTML() {
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="displayAreaDiv" style="width: 100%">
         <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">Choose a base script to display similar scripts.</h3>
-        <section class="grid grid-cols-4 sm:grid-cols-4 xl:grid-cols-4 gap-6">
+        <section class="grid grid-cols-7 sm:grid-cols-7 xl:grid-cols-7 gap-6">
             <div id="TFDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
             <div id="OutsidersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
             <div id="MinionDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
             <div id="DemonDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
+            <div id="TravellersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
+            <div id="LoricDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
+            <div id="FabledDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
         </section>
+            </section>
       </div>
     </section>
     
@@ -55,7 +59,9 @@ function getScriptsSimilarityHTML() {
 
 function initSlider(){
     var slider = document.getElementById("slider");
+    slider.value = 80;
     var valText = document.getElementById("demo");
+    valText.textContent = slider.value + "%";
     slider.oninput = function() {
     valText.innerHTML = this.value + "%";
     }
@@ -184,7 +190,7 @@ function difference(a, b) {
 }
 
 function renderCharacterList(baseScript, added = [], removed = []) {
-    const teamDivs = ['TFDiv', 'OutsidersDiv', 'MinionDiv', 'DemonDiv'];
+    const teamDivs = ['TFDiv', 'OutsidersDiv', 'MinionDiv', 'DemonDiv', 'TravellersDiv', 'LoricDiv', 'FabledDiv'];
     teamDivs.forEach(id => {
         document.getElementById(id).innerHTML = '';
     });
@@ -198,6 +204,9 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         else if (charTeam == 'outsider') div = document.getElementById('OutsidersDiv');
         else if (charTeam == 'minion') div = document.getElementById('MinionDiv');
         else if (charTeam == 'demon') div = document.getElementById('DemonDiv');
+        else if (charTeam == 'travellers') div = document.getElementById('TravellersDiv');
+        else if (charTeam == 'loric') div = document.getElementById('LoricDiv');
+        else if (charTeam == 'fabled') div = document.getElementById('FabledDiv');
         if (!div) return;
 
         const isAdded = (added || []).includes(char);

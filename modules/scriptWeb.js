@@ -1,11 +1,12 @@
 function getScriptsWebHTML() {
-  //<section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
   return `
     <section class="bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-0 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="scriptsWebDiv" style="height: 600px;"></div>
-      <div class="flex items-center justify-between">
-        <!-- Stats should be put here -->
-        <div id="statsWindow" bg-white dark:bg-[#1f2937] style="width: 100%;height: 600px; solid #ccc; overflow-y: auto;"></div>
+      <div class="flex flex-col justify-between" style="height: 600px;">
+        <h4 class="font-semibold text-gray-700 dark:text-gray-200 items-center justify-center" id="combination"></h4>
+        <div id="statsWindow" style="width: 100%; height: 100%; overflow-y: auto;">
+        </div>
+      </div>
     </section>
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="myList" style="width: 100%;"></div>
@@ -115,21 +116,30 @@ const TEAM_COLORS = {
   townsfolk: '#93c5fd',
   outsider: '#1e3a8a',
   minion: '#fca5a5',
-  demon: '#991b1b'
+  demon: '#991b1b',  
+  loric: '#35b90d',
+  fabled: '#c2c50b',
+  traveller: ""
 };
 
 const TEAM_BG_COLORS = {
-  townsfolk: 'rgba(147, 197, 253, 0.15)', // bleu clair, léger
-  outsider: 'rgba(30, 58, 138, 0.15)',    // bleu foncé, léger
-  minion: 'rgba(252, 165, 165, 0.15)',    // rouge clair, léger
-  demon: 'rgba(153, 27, 27, 0.15)'        // rouge foncé, léger
+  townsfolk: 'rgba(147, 197, 253, 0.15)',
+  outsider: 'rgba(30, 58, 138, 0.15)',
+  minion: 'rgba(252, 165, 165, 0.15)',
+  demon: 'rgba(153, 27, 27, 0.15)',
+  loric: '#1341054f',
+  fabled: '#4b4d064d',
+  traveller: ""
 };
 
 const TEAM_LABELS = {
   townsfolk: 'Townsfolk',
   outsider: 'Outsider',
   minion: 'Minion',
-  demon: 'Demon'
+  demon: 'Demon',
+  loric: 'Loric',
+  fabled: 'Fabled',
+  traveller: 'Traveller'
 };
 
 async function initScriptsWeb() {
@@ -154,7 +164,7 @@ async function initScriptsWeb() {
       )
       .add(
         new go.Picture({
-          source: "icons/acrobat.svg",
+          source: "",
           imageStretch: go.GraphObject.Uniform,
           alignment: go.Spot.Bottom,
           alignmentFocus: go.Spot.Bottom
@@ -221,6 +231,9 @@ async function initScriptsWeb() {
 function applyToggleStyle(item, team) {
   const isSelected = selectedCharacters.has(item.dataset.key);
   item.style.backgroundColor = isSelected ? TEAM_COLORS[team] : "";
+  if (team === "traveller") { 
+    item.style.backgroundImage = isSelected ? "linear-gradient(to left, rgba(255,0,0,1) 50%, rgba(0,0,255,1) 50%)": "";
+  }
 }
 
 // ===== Reconstruit le modèle GoJS à partir de selectedCharacters =====
@@ -248,13 +261,14 @@ function renderCharacterLists(diagram) {
   listDiv.style.gap = '16px';
   listDiv.style.alignItems = 'flex-start';
 
-  const teams = ['townsfolk', 'outsider', 'minion', 'demon'];
+  const teams = ['townsfolk', 'outsider', 'minion', 'demon', 'traveller', 'loric', 'fabled'];
 
   teams.forEach(team => {
     const column = document.createElement('div');
     column.style.flex = '1';
     column.style.minWidth = '0';
     column.style.backgroundColor = TEAM_BG_COLORS[team];
+    if (team === "traveller") { column.style.backgroundImage = "linear-gradient(to left, rgba(255,0,0,0.2) 50%, rgba(0,0,255,0.2) 50%)";}
     column.style.border = `1px solid ${TEAM_COLORS[team]}`;
     column.style.borderRadius = '10px';
     column.style.padding = '10px';
@@ -262,6 +276,7 @@ function renderCharacterLists(diagram) {
     const heading = document.createElement('h5');
     heading.textContent = TEAM_LABELS[team];
     heading.style.color = TEAM_COLORS[team];
+    if (team === "traveller") { heading.style.color = "linear-gradient(to left, rgb(255, 0, 0) 50%, rgb(0,0,255) 50%)";}
     heading.style.fontWeight = 'bold';
     heading.style.marginBottom = '6px';
     column.appendChild(heading);
@@ -343,13 +358,23 @@ function updateScriptsList() {
   const statsDiv = document.getElementById("statsWindow");
   if (!statsDiv) return;
   statsDiv.innerHTML = '';
-
+  
+  const heading = document.getElementById('combination');
   const chars = [...selectedCharacters];
-  if (chars.length < 2) return; // rien à afficher pour 0 ou 1 personnage
+  if (chars.length < 2) {
+    heading.textContent = 'Please select at least 2 characters.';
+    return;
+  }
 
   const scripts = scriptsContainingAll(chars);
-  if (scripts.length === 0) return;
-
+  if (scripts.length === 0) {
+    heading.textContent = 'No available script with these characters together.';
+    heading.style.fontWeight = 'bold';
+    heading.style.marginBottom = '6px';
+    heading.style.color = "#fff";
+    heading.style.cursor = 'default';
+    return;
+  }
   const groupName = [...chars].sort().join(' + ');
 
   const column = document.createElement('div');
@@ -359,8 +384,7 @@ function updateScriptsList() {
   column.style.padding = '10px';
   column.style.border = '1px solid #ddd';
 
-  const heading = document.createElement('h5');
-  heading.textContent = '▼ ' + groupName;
+  heading.textContent = groupName;
   heading.style.fontWeight = 'bold';
   heading.style.marginBottom = '6px';
   heading.style.color = "#fff"
@@ -368,7 +392,6 @@ function updateScriptsList() {
   heading.style.userSelect = 'none';
 
   const scriptsContainer = document.createElement('div');
-  scriptsContainer.style.display = 'block'; // ouvert par défaut, un seul groupe
 
   scripts.forEach(script => {
     const item = document.createElement("div");
@@ -405,15 +428,8 @@ function updateScriptsList() {
     item.appendChild(openBtn);
 
     scriptsContainer.appendChild(item);
-  });
+    });
 
-  heading.onclick = () => {
-    const isOpen = scriptsContainer.style.display === 'block';
-    scriptsContainer.style.display = isOpen ? 'none' : 'block';
-    heading.textContent = (isOpen ? '▶ ' : '▼ ') + groupName;
-  };
-
-  column.appendChild(heading);
   column.appendChild(scriptsContainer);
   statsDiv.appendChild(column);
 }
