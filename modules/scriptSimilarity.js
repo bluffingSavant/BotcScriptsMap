@@ -52,6 +52,7 @@ function getScriptsSimilarityHTML() {
     <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="displayAreaDiv" style="width: 100%">
         <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">Choose a base script to display similar scripts.</h3>
+        <h3 id="bootleggerDiv" class="text-l font-bold text-gray-800 dark:text-gray-100 mt-1" style="margin-bottom:0.5cm;">Bootlegger: <span id="bootleggerText"></span></h3>
         <section class="grid grid-cols-7 sm:grid-cols-7 xl:grid-cols-7 gap-6">
             <div id="TFDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
             <div id="OutsidersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
@@ -143,9 +144,12 @@ function findSimilarScripts(script) {
         script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams)
         if (script_a === script_b) { continue; }
         IoU = jaccard(script_a,script_b)
-        if (IoU === 1) {continue;} // Avoid exact same script to appear.
+        if (IoU === 1 && !scriptsData[index].content[0].bootlegger) {continue;} // Avoid exact same script to appear.
         if (IoU > threshold/100) {
             const [added, removed] = difference(script_a, script_b)
+            if (scriptsData[index].content[0].bootlegger) {
+                added.push("bootlegger")
+            }
             mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
         }
     }
@@ -171,7 +175,6 @@ function selectScript(script) {
 
 function updateSimilar(script) {
     mostSimilar = findSimilarScripts(script)
-
     const chartContainer = document.getElementById('chartContainer');
     const listContainer = document.getElementById('similarityList');
 
@@ -229,6 +232,14 @@ function updateText(script) {
 function compareScripts(newScript, baseScript, added, removed) {
     const displayAreaDiv = document.getElementById('textDiv')
     displayAreaDiv.textContent = baseScript.title + ' → ' + newScript.title;
+    
+    const bootleggerText = document.getElementById('bootleggerText');
+    bootleggerText.style.color = '#ca2525';
+    if (newScript.content[0].bootlegger) {
+        bootleggerText.textContent = newScript.content[0].bootlegger;
+    } else {
+        bootleggerText.textContent = "No bootlegger information available.";
+    }
     renderCharacterList(baseScript, added, removed);
 }
 
