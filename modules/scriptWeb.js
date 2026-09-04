@@ -15,6 +15,7 @@ function getScriptsWebHTML() {
 }
 
 let scriptsData = null;
+let base3_json = null;
 let scriptsByCharacter = {};
 
 function buildScriptsByCharacter() {
@@ -29,6 +30,7 @@ function buildScriptsByCharacter() {
 async function getScriptsData() {
   if (scriptsData) return scriptsData;
   const response = await fetch("botc_scripts/all_scripts.json");
+  base3_json = await (await fetch("botc_scripts/base3.json")).json();
   if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
   const jsonData = await response.json();
   scriptsData = jsonData;
@@ -175,7 +177,7 @@ async function initScriptsWeb() {
             const sz = go.Size.parse(sizeStr);
             return new go.Size(sz.width * 0.8, sz.height * 0.8);
           })
-          .bind("source", "key", (key) => `icons/${key}.svg`)
+          .bind("source", "key", (key) => `icons/characters/${key}.svg`)
       )
       .add(
         new go.Picture({ alignment: go.Spot.Center, alignmentFocus: go.Spot.Center })

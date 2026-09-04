@@ -1,0 +1,323 @@
+[
+   {
+    "pk": 178,
+    "script_id_original": 133,
+    "version": "1.0.0",
+    "title": "Trouble Brewing",
+    "author": "The Pandemonium Institute",
+    "characters": [
+      "washerwoman",
+      "librarian",
+      "investigator",
+      "chef",
+      "empath",
+      "fortuneteller",
+      "undertaker",
+      "monk",
+      "ravenkeeper",
+      "virgin",
+      "slayer",
+      "soldier",
+      "mayor",
+      "butler",
+      "drunk",
+      "recluse",
+      "saint",
+      "poisoner",
+      "spy",
+      "scarletwoman",
+      "baron",
+      "imp"
+    ],
+    "content": [
+      {
+        "id": "washerwoman"
+      },
+      {
+        "id": "librarian"
+      },
+      {
+        "id": "investigator"
+      },
+      {
+        "id": "chef"
+      },
+      {
+        "id": "empath"
+      },
+      {
+        "id": "fortuneteller"
+      },
+      {
+        "id": "undertaker"
+      },
+      {
+        "id": "monk"
+      },
+      {
+        "id": "ravenkeeper"
+      },
+      {
+        "id": "virgin"
+      },
+      {
+        "id": "slayer"
+      },
+      {
+        "id": "soldier"
+      },
+      {
+        "id": "mayor"
+      },
+      {
+        "id": "butler"
+      },
+      {
+        "id": "drunk"
+      },
+      {
+        "id": "recluse"
+      },
+      {
+        "id": "saint"
+      },
+      {
+        "id": "poisoner"
+      },
+      {
+        "id": "spy"
+      },
+      {
+        "id": "scarletwoman"
+      },
+      {
+        "id": "baron"
+      },
+      {
+        "id": "imp"
+      }
+    ]
+  },
+{
+    "pk": 181,
+    "script_id_original": 135,
+    "version": "1.0.0",
+    "title": "Bad Moon Rising",
+    "author": "The Pandemonium Institute",
+    "characters": [
+      "grandmother",
+      "sailor",
+      "chambermaid",
+      "exorcist",
+      "innkeeper",
+      "gambler",
+      "gossip",
+      "courtier",
+      "professor",
+      "minstrel",
+      "tealady",
+      "pacifist",
+      "fool",
+      "tinker",
+      "moonchild",
+      "goon",
+      "lunatic",
+      "godfather",
+      "devilsadvocate",
+      "assassin",
+      "mastermind",
+      "zombuul",
+      "pukka",
+      "shabaloth",
+      "po"
+    ],
+    "content": [
+      {
+        "id": "grandmother"
+      },
+      {
+        "id": "sailor"
+      },
+      {
+        "id": "chambermaid"
+      },
+      {
+        "id": "exorcist"
+      },
+      {
+        "id": "innkeeper"
+      },
+      {
+        "id": "gambler"
+      },
+      {
+        "id": "gossip"
+      },
+      {
+        "id": "courtier"
+      },
+      {
+        "id": "professor"
+      },
+      {
+        "id": "minstrel"
+      },
+      {
+        "id": "tealady"
+      },
+      {
+        "id": "pacifist"
+      },
+      {
+        "id": "fool"
+      },
+      {
+        "id": "tinker"
+      },
+      {
+        "id": "moonchild"
+      },
+      {
+        "id": "goon"
+      },
+      {
+        "id": "lunatic"
+      },
+      {
+        "id": "godfather"
+      },
+      {
+        "id": "devilsadvocate"
+      },
+      {
+        "id": "assassin"
+      },
+      {
+        "id": "mastermind"
+      },
+      {
+        "id": "zombuul"
+      },
+      {
+        "id": "pukka"
+      },
+      {
+        "id": "shabaloth"
+      },
+      {
+        "id": "po"
+      }
+    ]
+  },
+  {
+    "pk": 180,
+    "script_id_original": 134,
+    "version": "1.0.0",
+    "title": "Sects and Violets",
+    "author": "The Pandemonium Institute",
+    "characters": [
+      "clockmaker",
+      "dreamer",
+      "snakecharmer",
+      "mathematician",
+      "flowergirl",
+      "towncrier",
+      "oracle",
+      "savant",
+      "seamstress",
+      "philosopher",
+      "artist",
+      "juggler",
+      "sage",
+      "mutant",
+      "sweetheart",
+      "barber",
+      "klutz",
+      "eviltwin",
+      "witch",
+      "cerenovus",
+      "pithag",
+      "fanggu",
+      "vigormortis",
+      "nodashii",
+      "vortox"
+    ],
+    "content": [
+      {
+        "id": "clockmaker"
+      },
+      {
+        "id": "dreamer"
+      },
+      {
+        "id": "snakecharmer"
+      },
+      {
+        "id": "mathematician"
+      },
+      {
+        "id": "flowergirl"
+      },
+      {
+        "id": "towncrier"
+      },
+      {
+        "id": "oracle"
+      },
+      {
+        "id": "savant"
+      },
+      {
+        "id": "seamstress"
+      },
+      {
+        "id": "philosopher"
+      },
+      {
+        "id": "artist"
+      },
+      {
+        "id": "juggler"
+      },
+      {
+        "id": "sage"
+      },
+      {
+        "id": "mutant"
+      },
+      {
+        "id": "sweetheart"
+      },
+      {
+        "id": "barber"
+      },
+      {
+        "id": "klutz"
+      },
+      {
+        "id": "eviltwin"
+      },
+      {
+        "id": "witch"
+      },
+      {
+        "id": "cerenovus"
+      },
+      {
+        "id": "pithag"
+      },
+      {
+        "id": "fanggu"
+      },
+      {
+        "id": "vigormortis"
+      },
+      {
+        "id": "nodashii"
+      },
+      {
+        "id": "vortox"
+      }
+    ]
+  }
+]

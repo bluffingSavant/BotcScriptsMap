@@ -118,22 +118,23 @@ def get_page(page):
 # ============================================================
 # SCRIPT METADATA
 # ============================================================
+
 def meta_from_contents(content):
     """
-    Cherche l'entrée :
-        {
-            "id": "_meta",
-            "name": "...",
-            "author": "..."
-        }
-    dans le contenu du script.
+    Find the _meta entry in the script content.
     """
+
     for item in content:
-        if (item.get("id") == "_meta" and "name" in item
+
+        if (
+            item.get("id") == "_meta"
+            and "name" in item
         ):
             return {
-                "name": item["name"],
+                "name": item["name"] or f"Script {item.get("script_id")}",
                 "author": item.get("author", ""),
+                "script_id": item.get("script_id"),
+                "version": item.get("version"),
             }
 
     return None
@@ -195,7 +196,7 @@ def parse_script(script_id, data):
             "pk": int(script_id),
             "script_id_original": meta.get("script_id"),
             "version": meta.get("version"),
-            "title": meta["name"],
+            "title": meta["name"] or f"Script {script_id}",
             "author": meta["author"],
             "characters": ids_from_contents(content),
             "content": content,
@@ -215,13 +216,13 @@ def parse_script(script_id, data):
     meta = meta_from_contents(content)
     if meta is None:
         meta = {
-            "title": "",
+            "name": f"Script {script_id}",
             "author": "",
             "script_id": None,
             "version": None,
         }
 
-    title = data.get("title") or meta["name"]
+    title = data.get("name") or meta["name"]
     author = data.get("author") or meta["author"]
     version = (
         data.get("version")
@@ -274,7 +275,7 @@ def load_existing_database():
 def download_all_scripts():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    state = load_state() or {}
+    state = load_state()
     last_extracted_id = state.get("last_extracted_id", 0)
 
     print(f"Last extracted script ID: {last_extracted_id}")
@@ -282,6 +283,7 @@ def download_all_scripts():
     existing_scripts = load_existing_database()
 
     first_page = get_page(1)
+
     total_count = first_page["count"]
     page_size = len(first_page["results"])
 
@@ -303,6 +305,7 @@ def download_all_scripts():
 
         for item in results:
             script_id = item.get("pk")
+
             if script_id is None:
                 continue
 
@@ -326,7 +329,6 @@ def download_all_scripts():
 
     # Process first page directly.
     process_page(first_page["results"])
-
     # Fetch additional pages only while we have not reached old data.
     for page in range(2, num_pages + 1):
 

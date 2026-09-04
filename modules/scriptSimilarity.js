@@ -124,13 +124,13 @@ function initSlider(){
 
 function findSimilarScripts(script) {
     if (script=='TB') {
-        scriptContent = scriptsData.filter(s => s.title == "Trouble Brewing")[0]
+        scriptContent = base3_json.filter(s => s.title == "Trouble Brewing")[0]
     }
     else if (script=='BMR') {
-        scriptContent = scriptsData.filter(s => s.title == "Bad Moon Rising")[0]
+        scriptContent = base3_json.filter(s => s.title == "Bad Moon Rising")[0]
     }
     else if (script == 'SnV'){
-        scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0]
+        scriptContent = base3_json.filter(s => s.title == "Sects and Violets")[0]
     }
 
     const excludedTeams = getExcludedTeams();
@@ -145,7 +145,6 @@ function findSimilarScripts(script) {
         IoU = jaccard(script_a,script_b)
         if (IoU === 1) {continue;} // Avoid exact same script to appear.
         if (IoU > threshold/100) {
-            console.log(IoU)
             const [added, removed] = difference(script_a, script_b)
             mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
         }
@@ -211,15 +210,15 @@ function updateText(script) {
     const displayAreaDiv = document.getElementById('textDiv')
     let scriptContent;
     if (script == 'TB') {
-        scriptContent = scriptsData.filter(s => s.title == "Trouble Brewing")[0];
+        scriptContent = base3_json.filter(s => s.title == "Trouble Brewing")[0];
         scriptContent.characters.push("scapegoat", "gunslinger", "beggar", "bureaucrat", "thief")
     }
     else if (script == 'BMR') {
-        scriptContent = scriptsData.filter(s => s.title == "Bad Moon Rising")[0];
+        scriptContent = base3_json.filter(s => s.title == "Bad Moon Rising")[0];
         scriptContent.characters.push("butcher", "bonecollector", "harlot", "barista", "deviant")
     }
     else if (script == 'SnV') {
-        scriptContent = scriptsData.filter(s => s.title == "Sects and Violets")[0];
+        scriptContent = base3_json.filter(s => s.title == "Sects and Violets")[0];
         scriptContent.characters.push("apprentice", "matron", "voudon", "judge", "bishop")
     }
 
