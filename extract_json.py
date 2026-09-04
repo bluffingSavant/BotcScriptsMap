@@ -9,27 +9,19 @@ import requests
 # ============================================================
 # CONFIGURATION
 # ============================================================
-
 API_BASE = "https://botcscripts.com/api"
-
 OUTPUT_DIR = Path("botc_scripts")
-
-# Nombre de pages récupérées en parallèle
-PAGE_BATCH_SIZE = 2
-
-# Timeout HTTP
+STATE_FILE = OUTPUT_DIR / "extraction_state.json"
+DATABASE_FILE = OUTPUT_DIR / "all_scripts.json"
+# Small delay between page requests
+REQUEST_DELAY = 0.2
+# HTTP timeout
 TIMEOUT = 30
 
-# Petite pause entre les requêtes
-REQUEST_DELAY = 0.2
-
-
 # ============================================================
-# SESSION HTTP
+# HTTP SESSION
 # ============================================================
-
 session = requests.Session()
-
 session.headers.update({
     "User-Agent": (
         "Mozilla/5.0 "
@@ -43,36 +35,65 @@ session.headers.update({
 
 
 # ============================================================
-# UTILITAIRES
+# UTILITIES
 # ============================================================
-
 def request_json(url, params=None):
     """
-    Effectue une requête HTTP et retourne le JSON.
+    Perform an HTTP request and return the JSON response.
     """
-
     response = session.get(
         url,
         params=params,
         timeout=TIMEOUT,
     )
-
     response.raise_for_status()
-
     return response.json()
 
 
+def load_state():
+    """Load the extraction state from disk."""
+    if not STATE_FILE.exists():
+        return {"last_extracted_id": 0}
+
+    try:
+        with STATE_FILE.open("r", encoding="utf-8") as f:
+            state = json.load(f)
+
+        if not isinstance(state, dict):
+            print("Warning: Invalid extraction state. Resetting state.")
+            return {"last_extracted_id": 0}
+
+        return state
+
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"Warning: Could not load extraction state: {exc}")
+        print("Resetting extraction state.")
+        return {"last_extracted_id": 0}
+
+
+def save_state(last_extracted_id):
+    """
+    Save the ID of the latest extracted script.
+    """
+    state = {"last_extracted_id": int(last_extracted_id)}
+    with STATE_FILE.open("w", encoding="utf-8") as f:
+        json.dump(state,f,ensure_ascii=False,indent=2)
+
+
 # ============================================================
-# RECUPERATION D'UNE PAGE DE SCRIPTS
+# FETCH A PAGE OF SCRIPTS
 # ============================================================
 
 def get_page(page):
     """
-    Equivalent Python de getPage() dans all_scripts.ts.
+    Fetch one page of scripts.
 
-    Appelle :
+    IMPORTANT:
+    The API already returns the complete script information
+    in `results`.
 
-        /api/scripts/?format=json&page=X
+    Therefore, there is no need to make an additional request
+    to /api/scripts/{id}/ for each script.
     """
 
     url = f"{API_BASE}/scripts/"
@@ -82,7 +103,10 @@ def get_page(page):
         "page": page,
     }
 
-    data = request_json(url, params=params)
+    data = request_json(
+        url,
+        params=params,
+    )
 
     return {
         "count": data["count"],
@@ -92,27 +116,20 @@ def get_page(page):
 
 
 # ============================================================
-# METADATA D'UN SCRIPT
+# SCRIPT METADATA
 # ============================================================
-
 def meta_from_contents(content):
     """
     Cherche l'entrée :
-
         {
             "id": "_meta",
             "name": "...",
             "author": "..."
         }
-
     dans le contenu du script.
     """
-
     for item in content:
-
-        if (
-            item.get("id") == "_meta"
-            and "name" in item
+        if (item.get("id") == "_meta" and "name" in item
         ):
             return {
                 "name": item["name"],
@@ -124,9 +141,9 @@ def meta_from_contents(content):
 
 def ids_from_contents(content):
     """
-    Récupère les IDs des personnages présents dans un script.
+    Extract the character IDs present in a script.
 
-    _meta est exclu.
+    The _meta entry is excluded.
     """
 
     return [
@@ -138,110 +155,46 @@ def ids_from_contents(content):
 
 
 # ============================================================
-# RECUPERATION D'UN SCRIPT
-# ============================================================
-
-def get_script_response(script_id):
-    """
-    Equivalent Python de getScriptResp().
-
-    Essaie d'abord :
-
-        /api/scripts/{id}/?format=json
-
-    puis, en cas de 404 :
-
-        /api/scripts/{id}/json?format=json
-    """
-
-    # --------------------------------------------------------
-    # Première méthode
-    # --------------------------------------------------------
-
-    url = f"{API_BASE}/scripts/{script_id}/"
-
-    try:
-
-        data = request_json(
-            url,
-            params={"format": "json"},
-        )
-
-        return data
-
-    except requests.HTTPError as error:
-
-        if error.response is None:
-            raise
-
-        if error.response.status_code != 404:
-            raise
-
-    # --------------------------------------------------------
-    # Fallback pour certains anciens scripts
-    # --------------------------------------------------------
-
-    print(
-        f"  -> fallback JSON endpoint pour script {script_id}"
-    )
-
-    url = f"{API_BASE}/scripts/{script_id}/json"
-
-    data = request_json(
-        url,
-        params={"format": "json"},
-    )
-
-    return data
-
-
-# ============================================================
-# PARSING D'UN SCRIPT
+# PARSE A SCRIPT
 # ============================================================
 
 def parse_script(script_id, data):
     """
-    Reproduit la logique de getScript() / parseScriptInstance()
-    de botc-tools.
+    Transform the raw API response into the format used
+    by the rest of the pipeline.
 
-    Retourne les informations utiles du script.
+    `data` can be either:
+
+    1. A list containing the script characters directly.
+
+    or:
+
+    2. An object containing a `content` field.
     """
 
     # --------------------------------------------------------
-    # Cas 1 :
-    #
-    # L'API retourne directement un tableau :
-    #
-    # [
-    #   {"id": "washerwoman", ...},
-    #   ...
-    # ]
+    # Case 1:
+    # The API returns a list directly
     # --------------------------------------------------------
 
     if isinstance(data, list):
-
         content = data
-
         meta = meta_from_contents(content)
         if meta is None:
-
-            print(
-                f"  !! Pas de _meta pour le script {script_id}"
-            )
-
+            print(f"  !! No _meta entry found for script {script_id}")
             return {
                 "pk": int(script_id),
+                "script_id_original": None,
+                "version": None,
                 "title": "",
                 "author": "",
-                "score": 0,
                 "characters": ids_from_contents(content),
                 "content": content,
             }
-
         return {
             "pk": int(script_id),
-            "script_id": meta["script_id"],
-            "version": meta["version"] ,
+            "script_id_original": meta.get("script_id"),
+            "version": meta.get("version"),
             "title": meta["name"],
             "author": meta["author"],
             "characters": ids_from_contents(content),
@@ -249,26 +202,35 @@ def parse_script(script_id, data):
         }
 
     # --------------------------------------------------------
-    # Cas 2 :
-    #
-    # L'API retourne un objet ScriptInstanceResp
+    # Case 2:
+    # The API returns a ScriptInstanceResp object
     # --------------------------------------------------------
+    if not isinstance(data, dict):
+        raise ValueError(
+            f"Unexpected format for script {script_id}: "
+            f"{type(data)}"
+        )
 
     content = data.get("content", [])
-
     meta = meta_from_contents(content)
-
     if meta is None:
-
         meta = {
-            "name": "",
+            "title": "",
             "author": "",
+            "script_id": None,
+            "version": None,
         }
 
-    title = data.get("name") or meta["name"]
+    title = data.get("title") or meta["name"]
     author = data.get("author") or meta["author"]
-    version = data.get("version") or meta["version"]
-    script_id_original = data.get("script_id") or meta.get("script_id")
+    version = (
+        data.get("version")
+        or meta.get("version")
+    )
+    script_id_original = (
+        data.get("script_id")
+        or meta.get("script_id")
+    )
 
     return {
         "pk": data.get("pk", int(script_id)),
@@ -278,284 +240,128 @@ def parse_script(script_id, data):
         "author": author,
         "characters": ids_from_contents(content),
         "content": content,
-        "version": data.get("version"),
     }
 
-
 # ============================================================
-# TELECHARGEMENT D'UN SCRIPT
+# LOAD EXISTING DATABASE
 # ============================================================
-
-def download_script(script_id):
+def load_existing_database():
     """
-    Télécharge un script individuel.
-    """
+    Load all_scripts.json if it exists.
 
-    print(f"Téléchargement du script {script_id}...")
+    Returns a dictionary indexed by script PK in order
+    to prevent duplicates.
+    """
+    if not DATABASE_FILE.exists():
+        return {}
 
     try:
+        with open(DATABASE_FILE,"r",encoding="utf-8") as f:
+            scripts = json.load(f)
 
-        data = get_script_response(script_id)
-
-        script = parse_script(
-            script_id,
-            data,
-        )
-
-        return script
-
-    except requests.HTTPError as error:
-
-        print(
-            f"  !! HTTP error pour {script_id}: "
-            f"{error}"
-        )
+        database = {}
+        for script in scripts:
+            if "pk" not in script:
+                continue
+            database[int(script["pk"])] = script
+        return database
 
     except Exception as error:
+        print(f"!! Could not load {DATABASE_FILE}: {error}")
+        return {}
 
-        print(
-            f"  !! Erreur pour {script_id}: "
-            f"{error}"
-        )
-
-    return None
-
-
-# ============================================================
-# TELECHARGER TOUS LES SCRIPTS
-# ============================================================
-
+# DOWNLOAD / UPDATE
 def download_all_scripts():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    OUTPUT_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    state = load_state() or {}
+    last_extracted_id = state.get("last_extracted_id", 0)
 
-    # --------------------------------------------------------
-    # Première page
-    # --------------------------------------------------------
+    print(f"Last extracted script ID: {last_extracted_id}")
 
-    print("Récupération de la première page...")
+    existing_scripts = load_existing_database()
 
     first_page = get_page(1)
-
     total_count = first_page["count"]
+    page_size = len(first_page["results"])
 
-    first_results = first_page["results"]
-
-    print(
-        f"Nombre total de scripts annoncés : "
-        f"{total_count}"
-    )
-
-    print(
-        f"Scripts dans la première page : "
-        f"{len(first_results)}"
-    )
-
-    # --------------------------------------------------------
-    # Déterminer le nombre de pages
-    # --------------------------------------------------------
-
-    if len(first_results) == 0:
-
-        print("Aucun script trouvé.")
-
+    if page_size == 0:
+        print("No scripts found.")
         return
 
-    num_pages = math.ceil(
-        total_count / len(first_results)
-    )
+    num_pages = math.ceil(total_count / page_size)
 
-    print(
-        f"Nombre de pages estimé : {num_pages}"
-    )
+    print(f"Total scripts available: {total_count}")
+    print(f"Total pages: {num_pages}")
 
-    # --------------------------------------------------------
-    # Récupérer les IDs
-    # --------------------------------------------------------
+    new_scripts = []
+    highest_new_id = last_extracted_id
+    reached_existing_data = False
 
-    script_ids = []
+    def process_page(results):
+        nonlocal highest_new_id, reached_existing_data
 
-    for item in first_results:
-        script_ids.append(
-            str(item["pk"])
-        )
-        
+        for item in results:
+            script_id = item.get("pk")
+            if script_id is None:
+                continue
 
-    # --------------------------------------------------------
-    # Pages restantes
-    # --------------------------------------------------------
-    #pages_to_fetch = min(num_pages+1,3)
-    for page in range(2, num_pages):
-
-        print(
-            f"\nRécupération page "
-            f"{page}/{num_pages}..."
-        )
-
-        try:
-
-            page_data = get_page(page)
-
-            for item in page_data["results"]:
-
-                script_ids.append(
-                    str(item["pk"])
-                )
-
-            time.sleep(REQUEST_DELAY)
-
-        except Exception as error:
-
-            print(
-                f"  !! Impossible de récupérer "
-                f"la page {page}: {error}"
-            )
-
-    # --------------------------------------------------------
-    # Supprimer les doublons
-    # --------------------------------------------------------
-
-    script_ids = list(
-        dict.fromkeys(script_ids)
-    )
-
-    print(
-        f"\n{len(script_ids)} scripts uniques trouvés."
-    )
-
-    # --------------------------------------------------------
-    # Télécharger chaque script
-    # --------------------------------------------------------
-
-    all_scripts = []
-
-    for index, script_id in enumerate(
-        script_ids,
-        start=1,
-    ):
-
-        print(
-            f"\n[{index}/{len(script_ids)}]"
-        )
-
-        output_file = (
-            OUTPUT_DIR / "individual_scripts" /
-            f"{script_id}.json"
-        )
-
-        # Ne pas télécharger à nouveau
-        # les fichiers déjà présents.
-
-        if output_file.exists():
-
-            print(
-                f"  déjà présent : "
-                f"{output_file}"
-            )
+            # Stop processing once we reach scripts already extracted.
+            if script_id <= last_extracted_id:
+                reached_existing_data = True
+                continue
 
             try:
+                script = parse_script(script_id, item)
 
-                with open(
-                    output_file,
-                    "r",
-                    encoding="utf-8",
-                ) as f:
+                existing_scripts[script_id] = script
+                new_scripts.append(script)
 
-                    script = json.load(f)
+                highest_new_id = max(highest_new_id, script_id)
 
-                all_scripts.append(script)
+                print(f"Added script {script_id}: {script.get('title', 'Unknown')}")
 
-            except Exception:
+            except Exception as exc:
+                print(f"Failed to parse script {script_id}: {exc}")
 
-                print(
-                    "  fichier invalide, "
-                    "nouveau téléchargement"
-                )
+    # Process first page directly.
+    process_page(first_page["results"])
 
-            else:
+    # Fetch additional pages only while we have not reached old data.
+    for page in range(2, num_pages + 1):
 
-                continue
-        script = download_script(
-            script_id
-        )
+        if reached_existing_data:
+            break
 
-        if script is None:
-            continue
+        print(f"Fetching page {page}/{num_pages}...")
 
-        # ----------------------------------------------------
-        # Sauvegarde du JSON brut/enrichi
-        # ----------------------------------------------------
+        try:
+            data = get_page(page)
+        except Exception as exc:
+            print(f"Failed to fetch page {page}: {exc}")
+            break
 
-        with open(
-            output_file,
-            "w",
-            encoding="utf-8",
-        ) as f:
+        process_page(data["results"])
 
-            json.dump(
-                script,
-                f,
-                ensure_ascii=False,
-                indent=2,
-            )
+    # Save the complete database in a single file.
+    sorted_scripts = [
+        existing_scripts[script_id]
+        for script_id in sorted(existing_scripts)
+    ]
 
-        all_scripts.append(script)
+    with DATABASE_FILE.open("w", encoding="utf-8") as f:
+        json.dump(sorted_scripts, f, ensure_ascii=False, indent=2)
 
-        time.sleep(REQUEST_DELAY)
+    # Update extraction state only after all data has been saved.
+    if highest_new_id > last_extracted_id:
+        save_state(highest_new_id)
 
-    # --------------------------------------------------------
-    # Sauvegarder une base JSON globale
-    # --------------------------------------------------------
-
-    database_file = (
-        OUTPUT_DIR /
-        "all_scripts.json"
-    )
-
-    with open(
-        database_file,
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            all_scripts,
-            f,
-            ensure_ascii=False,
-            indent=2,
-        )
-
-    print("\n" + "=" * 60)
-
-    print(
-        f"Téléchargement terminé."
-    )
-
-    print(
-        f"Scripts téléchargés : "
-        f"{len(all_scripts)}"
-    )
-
-    print(
-        f"Dossier : "
-        f"{OUTPUT_DIR.resolve()}"
-    )
-
-    print(
-        f"Base globale : "
-        f"{database_file.resolve()}"
-    )
-
-    print("=" * 60)
-
-
+    print()
+    print(f"New scripts added: {len(new_scripts)}")
+    print(f"Total scripts in database: {len(sorted_scripts)}")
+    print(f"Latest extracted ID: {highest_new_id}")
 # ============================================================
 # MAIN
 # ============================================================
-
 if __name__ == "__main__":
-
     download_all_scripts()
