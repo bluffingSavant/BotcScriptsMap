@@ -68,7 +68,7 @@ function getScriptsSimilarityHTML() {
 
   `;
 }
-let currentScript = null;
+let currentScript = 'null';
 
 function selectScript(script) {
     currentScript = script;

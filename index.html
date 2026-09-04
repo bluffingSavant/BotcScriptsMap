@@ -14,6 +14,9 @@
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link rel="stylesheet" href="styles.css" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
@@ -35,12 +38,12 @@
       <nav class="flex-1 p-4 space-y-1 text-sm">
         <a href="#" onclick="switchPage('homepage')"
           class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-          <i class="fas fa-th-large w-5 text-indigo-500 dark:text-indigo-400"></i>
+          <i class="fas fa-home w-5 text-gray-400 dark:text-gray-500"></i>
           <span>Homepage</span>
         </a>
         <a href="#" onclick="switchPage('scriptSimilarity')"
           class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-          <i class="fas fa-th-large w-5 text-indigo-500 dark:text-indigo-400"></i>
+          <i class="fas fa-exchange w-5 text-gray-400 dark:text-gray-500"></i>
           <span>Script Similarity</span>
         </a>
         <a href="#" onclick="switchPage('dashboard')"
@@ -50,8 +53,13 @@
         </a>
         <a href="#" onclick="switchPage('character combinations')"
           class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-          <i class="fas fa-chart-pie w-5 text-gray-400 dark:text-gray-500"></i>
+          <i class="fas fa-users w-5 text-gray-400 dark:text-gray-500"></i>
           <span>Character combinations</span>
+        </a>
+        <a href="#" onclick="switchPage('youtube')"
+          class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+          <i class="fa fa-youtube-play text-gray-400 dark:text-gray-500"></i>
+          <span>Played on Youtube</span>
         </a>
       </nav>
       <div class="p-4 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400 dark:text-gray-500 flex items-center space-x-2">
@@ -130,6 +138,7 @@
   <script src="modules/dashboard.js"></script>
   <script src="modules/scriptWeb.js"></script>
   <script src="modules/scriptSimilarity.js"></script>
+  <script src="modules/youtubePlays.js"></script>
   <script src="main.js"></script>
 </body>
 

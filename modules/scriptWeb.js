@@ -283,7 +283,7 @@ function renderCharacterLists(diagram) {
     heading.style.textAlign = "center";
     if (team === "traveller") {
       heading.textContent = '';
-      const mid = Math.floor(TEAM_LABELS[team].length / 2);
+      const mid = Math.ceil(TEAM_LABELS[team].length / 2);
       const firstHalf = document.createElement('span');
       firstHalf.textContent = TEAM_LABELS[team].slice(0, mid);
       firstHalf.style.color = 'blue';

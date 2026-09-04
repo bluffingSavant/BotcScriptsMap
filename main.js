@@ -84,6 +84,7 @@ function renderPage(page) {
     case 'dashboard': html = getDashboardHTML(); break;
     case 'character combinations': html = getScriptsWebHTML(); break;
     case 'scriptSimilarity': html = getScriptsSimilarityHTML(); break;
+    case 'youtube': html = getListYoutubeHTML(); break;
     default: html = getHomepageHTML();
   }
   container.innerHTML = html;
@@ -104,6 +105,9 @@ function initPage(page) {
   else if (page === 'scriptSimilarity') {
     initSlider();
   }
+  else if (page === 'youtube') {
+    initListYoutube();
+  }
 }
 
 
@@ -121,7 +125,7 @@ let allTokens = [];
 let totalScripts = 0;
 
 window.addEventListener('DOMContentLoaded', async () => {
-  await Promise.all([loadRolesData(), getScriptsData(), getCharacters()]);
+  await Promise.all([loadRolesData(), getScriptsData(), getCharacters(), loadYoutubeVideosData()]);
   await Promise.all([ getLinks(), loadScriptsData()]);
   updateDashboardStats();
   initChartsForPage();
