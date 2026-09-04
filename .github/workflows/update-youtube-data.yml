@@ -2,7 +2,7 @@ name: Update YouTube video data
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # tous les jours à 6h UTC — ajuste selon tes besoins
+    - cron: "0 6 * * 1" # executed every Monday at 6:00 AM UTC
   workflow_dispatch:        # permet aussi un déclenchement manuel depuis l'onglet Actions
 
 permissions:

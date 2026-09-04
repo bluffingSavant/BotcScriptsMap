@@ -1,15 +1,3 @@
-// ===== YOUTUBE PLAYS MODULE =====
-// Regroupe les vidéos YouTube des chaînes BOTC par script, via lookup dans
-// all_scripts.json (déjà chargé globalement dans `scriptsData` par
-// getScriptsData(), voir scriptWeb.js).
-//
-// Les metadata vidéo viennent d'un fichier statique "youtube_data/youtube_videos.json",
-// régénéré périodiquement par le workflow GitHub Actions
-// .github/workflows/update-youtube-data.yml (qui exécute scripts/youtube_channel_videos.js
-// avec la clé API stockée en secret GitHub — jamais exposée au navigateur).
-
-// --- Cache en mémoire (évite de refaire le fetch à chaque changement d'onglet) ---
-
 let youtubeVideosData = null;
 
 async function loadYoutubeVideosData() {
@@ -110,7 +98,7 @@ function renderScriptGroup(scriptName, videos) {
     </details>`;
 }
 
-// ===== SHELL HTML (appelé par renderPage() dans main.js) =====
+// ===== SHELL HTML (called by renderPage() in main.js) =====
 function getListYoutubeHTML() {
   return `
     <section class="grid grid-cols-1 gap-6">
@@ -127,15 +115,13 @@ function getListYoutubeHTML() {
   `;
 }
 
-// ===== INIT (appelé par initPage() dans main.js) =====
+// ===== INIT (called by initPage() in main.js) =====
 async function initListYoutube() {
   const listDiv = document.getElementById("youtubeList");
   const countSpan = document.getElementById("youtubeScriptCount");
   if (!listDiv) return;
 
   try {
-    // Idempotents : si déjà en cache (appel précédent / scriptsData chargé
-    // au démarrage par scriptWeb.js), ces fonctions renvoient immédiatement.
     const [source] = await Promise.all([loadYoutubeVideosData(), getScriptsData()]);
 
     const scriptsIndex = buildScriptsTitleIndex();
