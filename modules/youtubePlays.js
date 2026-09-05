@@ -140,10 +140,12 @@ function extractScriptName(description, scriptsIndex, scriptsNameIndex) {
 
 
 // ============================================================
-// Grouping
+// Video collection & tagging
 // ============================================================
 
-function groupVideosByScript(source, scriptsIndex, scriptsNameIndex) {
+// Flatten the per-channel source object into a single list of
+// videos, each carrying its channel handle.
+function collectAllVideos(source) {
   const allVideos = [];
 
   for (const handle in source) {
@@ -157,68 +159,132 @@ function groupVideosByScript(source, scriptsIndex, scriptsNameIndex) {
     });
   }
 
-  const groups = new Map();
+  return allVideos;
+}
 
-  allVideos.forEach((video) => {
+
+// Attach the identified script name to each video, dropping videos
+// for which no script could be identified.
+function tagVideosWithScript(videos, scriptsIndex, scriptsNameIndex) {
+  const tagged = [];
+
+  videos.forEach((video) => {
     const scriptName = extractScriptName(
       video.description,
       scriptsIndex,
       scriptsNameIndex
     );
 
-    // Keep only videos for which the script was identified.
     if (!scriptName) return;
 
-    if (!groups.has(scriptName)) {
-      groups.set(scriptName, []);
+    tagged.push({ ...video, scriptName });
+  });
+
+  return tagged;
+}
+
+
+function sortVideosByDateDesc(videos) {
+  return [...videos].sort(
+    (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
+  );
+}
+
+
+// ============================================================
+// Grouping & sorting
+// ============================================================
+
+const BASE3_SCRIPTS = [
+  "Trouble Brewing",
+  "Bad Moon Rising",
+  "Sects and Violets"
+];
+
+const BASE3_ORDER = new Map(
+  BASE3_SCRIPTS.map((name, index) => [normalizeScriptName(name), index])
+);
+
+// Group already-tagged videos by script name. Returns a Map of
+// scriptName -> videos[], each video list sorted by date desc.
+function groupByScript(videos) {
+  const groups = new Map();
+
+  videos.forEach((video) => {
+    if (!groups.has(video.scriptName)) {
+      groups.set(video.scriptName, []);
     }
 
-    groups.get(scriptName).push(video);
+    groups.get(video.scriptName).push(video);
   });
 
-  // Sort videos within each script by publication date.
-  groups.forEach((videos) => {
-    videos.sort(
-      (a, b) =>
-        new Date(b.publishedAt) - new Date(a.publishedAt)
-    );
+  groups.forEach((vids, key) => {
+    groups.set(key, sortVideosByDateDesc(vids));
   });
 
-  // ----------------------------------------------------------
-  // Sort scripts
-  // ----------------------------------------------------------
+  return groups;
+}
 
-  const base3Scripts = [
-    "Trouble Brewing",
-    "Bad Moon Rising",
-    "Sects and Violets"
-  ];
 
-  const base3Normalized = new Map(
-    base3Scripts.map((name, index) => [
-      normalizeScriptName(name),
-      index
-    ])
+// Base3 scripts first (in their canonical order), then the rest
+// sorted by number of videos, descending.
+function compareScriptEntriesByCount([nameA, videosA], [nameB, videosB]) {
+  const base3A = BASE3_ORDER.get(normalizeScriptName(nameA));
+  const base3B = BASE3_ORDER.get(normalizeScriptName(nameB));
+
+  if (base3A !== undefined && base3B !== undefined) return base3A - base3B;
+  if (base3A !== undefined) return -1;
+  if (base3B !== undefined) return 1;
+
+  return videosB.length - videosA.length;
+}
+
+
+function compareScriptEntriesAlpha([nameA], [nameB]) {
+  return normalizeScriptName(nameA).localeCompare(normalizeScriptName(nameB));
+}
+
+
+// Group tagged videos by script and sort the groups according to
+// the requested mode ("count" or "alpha").
+function getSortedScriptEntries(videos, mode) {
+  const groups = groupByScript(videos);
+  const entries = [...groups.entries()];
+
+  entries.sort(
+    mode === "alpha" ? compareScriptEntriesAlpha : compareScriptEntriesByCount
   );
 
-  return [...groups.entries()].sort((a, b) => {
-    const nameA = normalizeScriptName(a[0]);
-    const nameB = normalizeScriptName(b[0]);
+  return entries;
+}
 
-    const base3A = base3Normalized.get(nameA);
-    const base3B = base3Normalized.get(nameB);
 
-    // Base 3 scripts always come first.
-    if (base3A !== undefined && base3B !== undefined) {
-      return base3A - base3B;
+// Group tagged videos by channel, then by script within each
+// channel. A script appears once per channel that has videos for
+// it (so the same script can appear under several channels).
+// Channels are sorted alphabetically; scripts within a channel use
+// the same base3-first / count-desc order as the "count" sort.
+function getChannelGroupedEntries(videos) {
+  const byChannel = new Map();
+
+  videos.forEach((video) => {
+    if (!byChannel.has(video.channel)) {
+      byChannel.set(video.channel, []);
     }
 
-    if (base3A !== undefined) return -1;
-    if (base3B !== undefined) return 1;
-
-    // All remaining scripts are sorted by number of videos.
-    return b[1].length - a[1].length;
+    byChannel.get(video.channel).push(video);
   });
+
+  const channelEntries = [...byChannel.entries()].map(
+    ([channel, channelVideos]) => [
+      channel,
+      getSortedScriptEntries(channelVideos, "count")
+    ]
+  );
+
+  channelEntries.sort((a, b) => a[0].localeCompare(b[0]));
+
+  return channelEntries;
 }
 
 
@@ -313,6 +379,54 @@ function renderScriptGroup(scriptName, videos) {
 }
 
 
+function renderChannelGroup(channel, scriptEntries) {
+  const videoCount = scriptEntries.reduce(
+    (sum, [, videos]) => sum + videos.length,
+    0
+  );
+
+  return `
+    <details class="group border border-gray-200 dark:border-gray-600 rounded-xl mb-3 overflow-hidden">
+
+      <summary class="cursor-pointer list-none flex items-center justify-between px-4 py-3 bg-gray-100 dark:bg-[#0b1220] hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+
+        <span class="font-bold text-gray-800 dark:text-gray-100">
+          ${escapeHtml(channel)}
+        </span>
+
+        <span class="flex items-center gap-2">
+
+          <span class="text-xs text-gray-400">
+            ${videoCount} video${videoCount > 1 ? "s" : ""}
+          </span>
+
+          <svg
+            class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+
+        </span>
+
+      </summary>
+
+      <div class="p-2">
+        ${scriptEntries.map(([name, videos]) => renderScriptGroup(name, videos)).join("")}
+      </div>
+
+    </details>
+  `;
+}
+
+
 // ============================================================
 // Page shell
 // ============================================================
@@ -323,16 +437,29 @@ function getListYoutubeHTML() {
 
       <div class="bg-white dark:bg-[#1f2937] p-5 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 card-hover">
 
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
 
           <h4 class="font-semibold text-gray-700 dark:text-gray-200">
             Videos by script (retrieved from BloodOnTheClocktower, NoRollsBarred and Adventure_Emporium)
           </h4>
 
-          <span
-            id="youtubeScriptCount"
-            class="text-xs text-gray-400"
-          ></span>
+          <div class="flex items-center gap-3">
+
+            <span
+              id="youtubeScriptCount"
+              class="text-xs text-gray-400"
+            ></span>
+
+            <select
+              id="youtubeSortSelect"
+              class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300"
+            >
+              <option value="count">Tri : nombre de vidéos</option>
+              <option value="channel">Tri : chaîne YouTube</option>
+              <option value="alpha">Tri : ordre alphabétique</option>
+            </select>
+
+          </div>
 
         </div>
 
@@ -353,9 +480,52 @@ function getListYoutubeHTML() {
 // Initialization
 // ============================================================
 
-async function initListYoutube() {
+// Videos tagged with their identified script, kept in memory so
+// changing the sort mode doesn't require re-fetching or re-matching.
+let taggedYoutubeVideos = null;
+
+function renderYoutubeList(mode) {
   const listDiv = document.getElementById("youtubeList");
   const countSpan = document.getElementById("youtubeScriptCount");
+
+  if (!listDiv || !taggedYoutubeVideos) return;
+
+  if (mode === "channel") {
+    const channelEntries = getChannelGroupedEntries(taggedYoutubeVideos);
+
+    if (countSpan) {
+      const scriptCount = new Set(
+        taggedYoutubeVideos.map((v) => v.scriptName)
+      ).size;
+
+      countSpan.textContent =
+        `${scriptCount} script${scriptCount > 1 ? "s" : ""} · ` +
+        `${channelEntries.length} chaîne${channelEntries.length > 1 ? "s" : ""}`;
+    }
+
+    listDiv.innerHTML = channelEntries
+      .map(([channel, scriptEntries]) => renderChannelGroup(channel, scriptEntries))
+      .join("");
+
+    return;
+  }
+
+  const scriptEntries = getSortedScriptEntries(taggedYoutubeVideos, mode);
+
+  if (countSpan) {
+    countSpan.textContent =
+      `${scriptEntries.length} script${scriptEntries.length > 1 ? "s" : ""}`;
+  }
+
+  listDiv.innerHTML = scriptEntries
+    .map(([name, videos]) => renderScriptGroup(name, videos))
+    .join("");
+}
+
+
+async function initListYoutube() {
+  const listDiv = document.getElementById("youtubeList");
+  const sortSelect = document.getElementById("youtubeSortSelect");
 
   if (!listDiv) return;
 
@@ -368,20 +538,20 @@ async function initListYoutube() {
     const scriptsIndex = buildScriptsTitleIndex();
     const scriptsNameIndex = buildScriptsNameIndex();
 
-    const groupedScripts = groupVideosByScript(
-      source,
+    const allVideos = collectAllVideos(source);
+    taggedYoutubeVideos = tagVideosWithScript(
+      allVideos,
       scriptsIndex,
       scriptsNameIndex
     );
 
-    if (countSpan) {
-      countSpan.textContent =
-        `${groupedScripts.length} script${groupedScripts.length > 1 ? "s" : ""}`;
-    }
+    renderYoutubeList(sortSelect ? sortSelect.value : "count");
 
-    listDiv.innerHTML = groupedScripts
-      .map(([name, videos]) => renderScriptGroup(name, videos))
-      .join("");
+    if (sortSelect) {
+      sortSelect.addEventListener("change", () => {
+        renderYoutubeList(sortSelect.value);
+      });
+    }
 
   } catch (err) {
     console.error("Error while loading YouTube videos:", err);
