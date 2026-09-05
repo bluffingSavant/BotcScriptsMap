@@ -454,9 +454,9 @@ function getListYoutubeHTML() {
               id="youtubeSortSelect"
               class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300"
             >
-              <option value="count">Tri : nombre de vidéos</option>
-              <option value="channel">Tri : chaîne YouTube</option>
-              <option value="alpha">Tri : ordre alphabétique</option>
+              <option value="count">Sort : number of videos</option>
+              <option value="channel">Sort : YouTube channel</option>
+              <option value="alpha">Sort : alphabetical order</option>
             </select>
 
           </div>
