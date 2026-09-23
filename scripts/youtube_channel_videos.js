@@ -19,42 +19,23 @@ const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_
 const BASE = "https://www.googleapis.com/youtube/v3";
 
 // Playlists dont TOUTES les vidéos doivent être attribuées à un script précis,
-// indépendamment de ce que dit la description (utile pour les playlists du
-// type "toutes les parties jouées sur tel script"). Le titre doit correspondre
-// exactement au titre affiché sur YouTube (insensible à la casse).
+// indépendamment de ce que dit la description. Utile en particulier pour des
+// playlists créées par un tiers, qui piochent des vidéos sur plusieurs chaînes
+// différentes — la chaîne d'origine réelle de chaque vidéo est de toute façon
+// retrouvée via l'API (voir ownerChannelTitle plus bas), pas via cette config.
+//
+// `playlistId` s'obtient dans l'URL YouTube de la playlist :
+//   https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxxx
+//                                          ^^^^^^^^^^^^^^^^^^ c'est ça
 const PLAYLIST_SCRIPT_OVERRIDES = [
-  { channelHandle: "@iljitsch", playlistTitle: "BoTC Trouble Brewing", scriptName: "Trouble Brewing" },
-  { channelHandle: "@iljitsch", playlistTitle: "BoTC Bad Moon Rising", scriptName: "Bad Moon Rising" },
-  { channelHandle: "@iljitsch", playlistTitle: "BoTC Sects & Violets", scriptName: "Sects and Violets" },
+  { playlistId: "PLtnTSHgF3XLausN3H0hk-cR91ZEXesxEE", scriptName: "Trouble Brewing" },
+  { playlistId: "PLtnTSHgF3XLZhho-8S-Jq6yuRFrW1hwZZ", scriptName: "Bad Moon Rising" },
+  { playlistId: "PLtnTSHgF3XLaGfq3WmWuvjPzw-OAywtkX", scriptName: "Sects and Violets" },
   // Ajoute d'autres entrées ici, par ex. :
-  // { channelHandle: "@BloodontheClocktower", playlistTitle: "BoTC Bad Moon Rising", scriptName: "Bad Moon Rising" },
+  // { playlistId: "PLyyyyyyyyyyyyyyyyy", scriptName: "Bad Moon Rising" },
 ];
 
 const log = (msg) => console.error(msg);
-
-// Cherche, dans les playlists d'une chaîne, celle dont le titre correspond
-// exactement (insensible à la casse) à `title`. Renvoie son ID ou null.
-async function findPlaylistIdByTitle(channelId, title) {
-  const normalizedTarget = title.trim().toLowerCase();
-  let pageToken = "";
-
-  do {
-    const url = `${BASE}/playlists?part=snippet&channelId=${channelId}&maxResults=50&pageToken=${pageToken}&key=${API_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (data.error) throw new Error(`Erreur API: ${data.error.message}`);
-
-    const match = (data.items || []).find(
-      (item) => item.snippet.title.trim().toLowerCase() === normalizedTarget
-    );
-    if (match) return match.id;
-
-    pageToken = data.nextPageToken || "";
-  } while (pageToken);
-
-  return null;
-}
 
 async function getChannelIdFromHandle(handle) {
   const url = `${BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${API_KEY}`;
@@ -97,6 +78,10 @@ async function getAllVideoIds(playlistId) {
         description: item.snippet.description,
         publishedAt: item.contentDetails.videoPublishedAt,
         thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url,
+        // Chaîne qui a réellement publié la vidéo (utile pour les playlists
+        // "agrégateur" qui piochent des vidéos sur plusieurs chaînes).
+        ownerChannelTitle: item.snippet.videoOwnerChannelTitle || null,
+        ownerChannelId: item.snippet.videoOwnerChannelId || null,
       });
     }
 
@@ -157,39 +142,49 @@ async function getChannelVideos(handle) {
 
 // Récupère les vidéos des playlists listées dans PLAYLIST_SCRIPT_OVERRIDES et
 // les fusionne dans `results`, en leur ajoutant un champ `scriptOverride`.
-// Si une vidéo de playlist existe déjà (récupérée via les uploads normaux),
-// on ajoute simplement le scriptOverride sur l'entrée existante plutôt que
-// de dupliquer la vidéo.
+//
+// Ces playlists peuvent être créées par un tiers indépendant et piocher des
+// vidéos sur des chaînes qui ne sont pas dans CHANNEL_HANDLES : chaque vidéo
+// garde donc sa vraie chaîne d'origine (`ownerChannelTitle`, déjà capturé par
+// getAllVideoIds), pas celle du curateur de la playlist.
+//
+// Le dédoublonnage se fait sur l'ensemble des vidéos déjà récupérées, toutes
+// chaînes confondues : si une vidéo de la playlist a déjà été vue ailleurs
+// (upload normal d'une des chaînes suivies), on ajoute juste le
+// scriptOverride sur l'entrée existante plutôt que de la dupliquer.
 async function applyPlaylistOverrides(results) {
+  const existingById = new Map();
+  for (const handle in results) {
+    for (const video of results[handle].videos) {
+      existingById.set(video.videoId, video);
+    }
+  }
+
+  // Bucket dédié aux vidéos qui ne proviennent d'aucune des chaînes suivies.
+  if (!results._playlists) {
+    results._playlists = { videos: [] };
+  }
+
   for (const override of PLAYLIST_SCRIPT_OVERRIDES) {
-    const channelResult = results[override.channelHandle];
-    if (!channelResult) {
-      log(`Chaîne inconnue pour l'override "${override.playlistTitle}": ${override.channelHandle}`);
-      continue;
-    }
-
-    log(`=== Playlist "${override.playlistTitle}" (${override.channelHandle}) ===`);
-    const playlistId = await findPlaylistIdByTitle(channelResult.channelId, override.playlistTitle);
-
-    if (!playlistId) {
-      log(`Playlist introuvable: "${override.playlistTitle}"`);
-      continue;
-    }
+    log(`=== Playlist ${override.playlistId} -> script "${override.scriptName}" ===`);
 
     log("Récupération des vidéos de la playlist...");
-    const playlistVideos = await getAllVideoIds(playlistId);
+    const playlistVideos = await getAllVideoIds(override.playlistId);
     log(`${playlistVideos.length} vidéos trouvées, enrichissement...`);
     const enrichedPlaylistVideos = await enrichWithVideoDetails(playlistVideos);
-
-    const existingById = new Map(channelResult.videos.map((v) => [v.videoId, v]));
 
     for (const video of enrichedPlaylistVideos) {
       const existing = existingById.get(video.videoId);
       if (existing) {
         existing.scriptOverride = override.scriptName;
+        // On préfère la vraie chaîne d'origine si on ne l'avait pas déjà.
+        if (!existing.ownerChannelTitle && video.ownerChannelTitle) {
+          existing.ownerChannelTitle = video.ownerChannelTitle;
+          existing.ownerChannelId = video.ownerChannelId;
+        }
       } else {
         video.scriptOverride = override.scriptName;
-        channelResult.videos.push(video);
+        results._playlists.videos.push(video);
         existingById.set(video.videoId, video);
       }
     }

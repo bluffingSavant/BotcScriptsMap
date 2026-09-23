@@ -144,7 +144,14 @@ function extractScriptName(description, scriptsIndex, scriptsNameIndex) {
 // ============================================================
 
 // Flatten the per-channel source object into a single list of
-// videos, each carrying its channel handle.
+// videos, each carrying its real origin channel.
+//
+// For videos fetched through a channel's own uploads playlist, that's just
+// the channel handle we fetched them from. For videos pulled in via a
+// playlist-based script override (see youtube_channel_videos.js), the video
+// may originate from a channel we don't otherwise track — in that case we
+// use `ownerChannelTitle`, which the API reports regardless of who owns the
+// playlist.
 function collectAllVideos(source) {
   const allVideos = [];
 
@@ -154,7 +161,7 @@ function collectAllVideos(source) {
     channelVideos.forEach((video) => {
       allVideos.push({
         ...video,
-        channel: handle
+        channel: video.ownerChannelTitle || handle
       });
     });
   }
@@ -478,11 +485,7 @@ function getListYoutubeHTML() {
           </div>
 
         </div>
-        <div id="credits">
-          <p class="text-sm text-gray-400">
-            Credits to reddit user "iljitsch275" for the curation of the Youtube playlists.
-          </p>
-        </div>
+
         <div id="youtubeList">
           <p class="text-sm text-gray-400">
             Loading...
