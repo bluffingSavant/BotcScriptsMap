@@ -490,7 +490,7 @@ let taggedYoutubeVideos = null;
 function renderYoutubeList(mode) {
   const listDiv = document.getElementById("youtubeList");
   const countSpan = document.getElementById("youtubeScriptCount");
-  const nbVideosSpan = document.getElementById("youtubeVideoCount");
+  const nbVideosSpan = document.getElementById("nbVideosSpan");
 
   if (!listDiv || !taggedYoutubeVideos) return;
 
@@ -504,7 +504,7 @@ function renderYoutubeList(mode) {
 
       countSpan.textContent =
         `${scriptCount} script${scriptCount > 1 ? "s" : ""} · ` +
-        `${channelEntries.length} chaîne${channelEntries.length > 1 ? "s" : ""}`;
+        `${channelEntries.length} channel${channelEntries.length > 1 ? "s" : ""}`;
     }
 
     listDiv.innerHTML = channelEntries
@@ -517,7 +517,7 @@ function renderYoutubeList(mode) {
   const scriptEntries = getSortedScriptEntries(taggedYoutubeVideos, mode);
   if (nbVideosSpan) {
       const videoCount = taggedYoutubeVideos.length;
-      nbVideosSpan.textContent = `${videoCount} vidéo${videoCount > 1 ? "s" : ""}`;
+      nbVideosSpan.textContent = `${videoCount} video${videoCount > 1 ? "s" : ""}`;
     }
   if (countSpan) {
     countSpan.textContent =
