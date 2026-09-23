@@ -165,15 +165,28 @@ function collectAllVideos(source) {
 
 // Attach the identified script name to each video, dropping videos
 // for which no script could be identified.
+//
+// If a video carries an explicit `scriptOverride` (set by a playlist-based
+// override in youtube_channel_videos.js), it takes absolute priority over
+// whatever the description says — we just try to resolve it to the
+// canonical title via scriptsNameIndex, falling back to the raw override
+// text if no match is found.
 function tagVideosWithScript(videos, scriptsIndex, scriptsNameIndex) {
   const tagged = [];
 
   videos.forEach((video) => {
-    const scriptName = extractScriptName(
-      video.description,
-      scriptsIndex,
-      scriptsNameIndex
-    );
+    let scriptName;
+
+    if (video.scriptOverride) {
+      const normalizedOverride = normalizeScriptName(video.scriptOverride);
+      scriptName = scriptsNameIndex.get(normalizedOverride) || video.scriptOverride;
+    } else {
+      scriptName = extractScriptName(
+        video.description,
+        scriptsIndex,
+        scriptsNameIndex
+      );
+    }
 
     if (!scriptName) return;
 
@@ -465,7 +478,11 @@ function getListYoutubeHTML() {
           </div>
 
         </div>
-
+        <div id="credits">
+          <p class="text-sm text-gray-400">
+            Credits to reddit user "iljitsch275" for the curation of the Youtube playlists.
+          </p>
+        </div>
         <div id="youtubeList">
           <p class="text-sm text-gray-400">
             Loading...

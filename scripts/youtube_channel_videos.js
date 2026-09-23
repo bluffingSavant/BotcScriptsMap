@@ -15,10 +15,46 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant"];
+const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant", "@The_Megavoid"];
 const BASE = "https://www.googleapis.com/youtube/v3";
 
+// Playlists dont TOUTES les vidéos doivent être attribuées à un script précis,
+// indépendamment de ce que dit la description (utile pour les playlists du
+// type "toutes les parties jouées sur tel script"). Le titre doit correspondre
+// exactement au titre affiché sur YouTube (insensible à la casse).
+const PLAYLIST_SCRIPT_OVERRIDES = [
+  { channelHandle: "@iljitsch", playlistTitle: "BoTC Trouble Brewing", scriptName: "Trouble Brewing" },
+  { channelHandle: "@iljitsch", playlistTitle: "BoTC Bad Moon Rising", scriptName: "Bad Moon Rising" },
+  { channelHandle: "@iljitsch", playlistTitle: "BoTC Sects & Violets", scriptName: "Sects and Violets" },
+  // Ajoute d'autres entrées ici, par ex. :
+  // { channelHandle: "@BloodontheClocktower", playlistTitle: "BoTC Bad Moon Rising", scriptName: "Bad Moon Rising" },
+];
+
 const log = (msg) => console.error(msg);
+
+// Cherche, dans les playlists d'une chaîne, celle dont le titre correspond
+// exactement (insensible à la casse) à `title`. Renvoie son ID ou null.
+async function findPlaylistIdByTitle(channelId, title) {
+  const normalizedTarget = title.trim().toLowerCase();
+  let pageToken = "";
+
+  do {
+    const url = `${BASE}/playlists?part=snippet&channelId=${channelId}&maxResults=50&pageToken=${pageToken}&key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.error) throw new Error(`Erreur API: ${data.error.message}`);
+
+    const match = (data.items || []).find(
+      (item) => item.snippet.title.trim().toLowerCase() === normalizedTarget
+    );
+    if (match) return match.id;
+
+    pageToken = data.nextPageToken || "";
+  } while (pageToken);
+
+  return null;
+}
 
 async function getChannelIdFromHandle(handle) {
   const url = `${BASE}/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${API_KEY}`;
@@ -37,7 +73,7 @@ async function getUploadsPlaylistId(channelId) {
   const data = await res.json();
 
   if (!data.items || data.items.length === 0) {
-    throw new Error("Chaîne introuvable. Vérifie le channelId.");
+    throw new Error("Channel not found or no contentDetails available for channelId: " + channelId);
   }
 
   return data.items[0].contentDetails.relatedPlaylists.uploads;
@@ -119,11 +155,55 @@ async function getChannelVideos(handle) {
   return { handle, channelId, videos: enriched };
 }
 
+// Récupère les vidéos des playlists listées dans PLAYLIST_SCRIPT_OVERRIDES et
+// les fusionne dans `results`, en leur ajoutant un champ `scriptOverride`.
+// Si une vidéo de playlist existe déjà (récupérée via les uploads normaux),
+// on ajoute simplement le scriptOverride sur l'entrée existante plutôt que
+// de dupliquer la vidéo.
+async function applyPlaylistOverrides(results) {
+  for (const override of PLAYLIST_SCRIPT_OVERRIDES) {
+    const channelResult = results[override.channelHandle];
+    if (!channelResult) {
+      log(`Chaîne inconnue pour l'override "${override.playlistTitle}": ${override.channelHandle}`);
+      continue;
+    }
+
+    log(`=== Playlist "${override.playlistTitle}" (${override.channelHandle}) ===`);
+    const playlistId = await findPlaylistIdByTitle(channelResult.channelId, override.playlistTitle);
+
+    if (!playlistId) {
+      log(`Playlist introuvable: "${override.playlistTitle}"`);
+      continue;
+    }
+
+    log("Récupération des vidéos de la playlist...");
+    const playlistVideos = await getAllVideoIds(playlistId);
+    log(`${playlistVideos.length} vidéos trouvées, enrichissement...`);
+    const enrichedPlaylistVideos = await enrichWithVideoDetails(playlistVideos);
+
+    const existingById = new Map(channelResult.videos.map((v) => [v.videoId, v]));
+
+    for (const video of enrichedPlaylistVideos) {
+      const existing = existingById.get(video.videoId);
+      if (existing) {
+        existing.scriptOverride = override.scriptName;
+      } else {
+        video.scriptOverride = override.scriptName;
+        channelResult.videos.push(video);
+        existingById.set(video.videoId, video);
+      }
+    }
+  }
+}
+
 async function main() {
   const results = {};
   for (const handle of CHANNEL_HANDLES) {
     results[handle] = await getChannelVideos(handle);
   }
+
+  await applyPlaylistOverrides(results);
+
   // Seul le JSON final part sur stdout : c'est ce qui sera redirigé vers le fichier.
   process.stdout.write(JSON.stringify(results, null, 2));
 }
