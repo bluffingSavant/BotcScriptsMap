@@ -196,6 +196,7 @@ function tagVideosWithScript(videos, scriptsIndex, scriptsNameIndex) {
     }
 
     if (!scriptName) return;
+    if (video.title == "Private video") return;
 
     tagged.push({ ...video, scriptName });
   });
@@ -485,7 +486,11 @@ function getListYoutubeHTML() {
           </div>
 
         </div>
-
+        <div id="youtubeList">
+          <p class="text-sm text-gray-400">
+            Special thanks to reddit user @iljitsch275 for curating BoTC playlists. 
+          </p>
+        </div>
         <div id="youtubeList">
           <p class="text-sm text-gray-400">
             Loading...

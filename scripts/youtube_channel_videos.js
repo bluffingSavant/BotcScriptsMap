@@ -15,7 +15,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant", "@The_Megavoid"];
+const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant", "@The_Megavoid", "@BlampCoBoardGames"];
 const BASE = "https://www.googleapis.com/youtube/v3";
 
 // Playlists dont TOUTES les vidéos doivent être attribuées à un script précis,
