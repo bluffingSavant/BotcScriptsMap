@@ -507,11 +507,6 @@ function renderYoutubeList(mode) {
         `${channelEntries.length} chaîne${channelEntries.length > 1 ? "s" : ""}`;
     }
 
-    if (nbVideosSpan) {
-      const videoCount = taggedYoutubeVideos.length;
-      nbVideosSpan.textContent = `${videoCount} vidéo${videoCount > 1 ? "s" : ""}`;
-    }
-
     listDiv.innerHTML = channelEntries
       .map(([channel, scriptEntries]) => renderChannelGroup(channel, scriptEntries))
       .join("");
@@ -520,7 +515,10 @@ function renderYoutubeList(mode) {
   }
 
   const scriptEntries = getSortedScriptEntries(taggedYoutubeVideos, mode);
-
+  if (nbVideosSpan) {
+      const videoCount = taggedYoutubeVideos.length;
+      nbVideosSpan.textContent = `${videoCount} vidéo${videoCount > 1 ? "s" : ""}`;
+    }
   if (countSpan) {
     countSpan.textContent =
       `${scriptEntries.length} script${scriptEntries.length > 1 ? "s" : ""}`;
