@@ -15,7 +15,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium"];
+const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant"];
 const BASE = "https://www.googleapis.com/youtube/v3";
 
 const log = (msg) => console.error(msg);
