@@ -26,7 +26,7 @@ const BASE = "https://www.googleapis.com/youtube/v3";
 //
 // `playlistId` s'obtient dans l'URL YouTube de la playlist :
 //   https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxxx
-//                                          ^^^^^^^^^^^^^^^^^^ c'est ça
+//                                          ^^^^^^^^^^^^^^^^^^
 const PLAYLIST_SCRIPT_OVERRIDES = [
   { playlistId: "PLtnTSHgF3XLausN3H0hk-cR91ZEXesxEE", scriptName: "Trouble Brewing" },
   { playlistId: "PLtnTSHgF3XLZhho-8S-Jq6yuRFrW1hwZZ", scriptName: "Bad Moon Rising" },

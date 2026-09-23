@@ -460,7 +460,7 @@ function getListYoutubeHTML() {
         <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
 
           <h4 class="font-semibold text-gray-700 dark:text-gray-200">
-            Videos by script (retrieved from BloodOnTheClocktower, NoRollsBarred, Mt-Unpleasant and Adventure_Emporium)
+            Videos by script
           </h4>
 
           <div class="flex items-center gap-3">
