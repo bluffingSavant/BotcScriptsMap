@@ -15,24 +15,31 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant", "@The_Megavoid", "@BlampCoBoardGames"];
+const CHANNEL_HANDLES = ["@BloodontheClocktower", "@NoRollsBarred", "@Adventure_Emporium", "@Mt-Unpleasant", "@The_Megavoid"];
 const BASE = "https://www.googleapis.com/youtube/v3";
 
-// Playlists dont TOUTES les vidéos doivent être attribuées à un script précis,
-// indépendamment de ce que dit la description. Utile en particulier pour des
-// playlists créées par un tiers, qui piochent des vidéos sur plusieurs chaînes
-// différentes — la chaîne d'origine réelle de chaque vidéo est de toute façon
-// retrouvée via l'API (voir ownerChannelTitle plus bas), pas via cette config.
+// Playlists supplémentaires à intégrer au pool de vidéos, en plus des
+// uploads normaux des chaînes suivies. La chaîne d'origine réelle de chaque
+// vidéo est de toute façon retrouvée via l'API (ownerChannelTitle, voir plus
+// bas), qu'importe qui a créé/possède la playlist.
 //
 // `playlistId` s'obtient dans l'URL YouTube de la playlist :
 //   https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxxx
-//                                          ^^^^^^^^^^^^^^^^^^
-const PLAYLIST_SCRIPT_OVERRIDES = [
+//                                          ^^^^^^^^^^^^^^^^^^ c'est ça
+//
+// `scriptName` est OPTIONNEL :
+// - Présent : toutes les vidéos de la playlist sont forcées sur ce script,
+//   peu importe leur description (playlist "un seul script").
+// - Absent : chaque vidéo garde le parsing normal de sa description (lien
+//   botcscripts.com, ou fallback texte) pour déterminer son script — utile
+//   pour une playlist où plusieurs scripts différents sont joués.
+const PLAYLIST_SOURCES = [
   { playlistId: "PLtnTSHgF3XLausN3H0hk-cR91ZEXesxEE", scriptName: "Trouble Brewing" },
   { playlistId: "PLtnTSHgF3XLZhho-8S-Jq6yuRFrW1hwZZ", scriptName: "Bad Moon Rising" },
   { playlistId: "PLtnTSHgF3XLaGfq3WmWuvjPzw-OAywtkX", scriptName: "Sects and Violets" },
-  // Ajoute d'autres entrées ici, par ex. :
-  // { playlistId: "PLyyyyyyyyyyyyyyyyy", scriptName: "Bad Moon Rising" },
+  // "Botc Custom Scripts" : plusieurs scripts différents, pas de scriptName,
+  // chaque vidéo est identifiée individuellement via sa description.
+  { playlistId: "PLtnTSHgF3XLbPAHpIcpv9EaHSYMz0yhtv"},
 ];
 
 const log = (msg) => console.error(msg);
@@ -140,8 +147,11 @@ async function getChannelVideos(handle) {
   return { handle, channelId, videos: enriched };
 }
 
-// Récupère les vidéos des playlists listées dans PLAYLIST_SCRIPT_OVERRIDES et
-// les fusionne dans `results`, en leur ajoutant un champ `scriptOverride`.
+// Récupère les vidéos des playlists listées dans PLAYLIST_SOURCES et les
+// fusionne dans `results`. Si l'entrée a un `scriptName`, il est forcé sur
+// chaque vidéo (`scriptOverride`) ; sinon, la vidéo est simplement ajoutée
+// au pool sans override, et son script sera déterminé normalement à partir
+// de sa description côté front-end (comme pour un upload classique).
 //
 // Ces playlists peuvent être créées par un tiers indépendant et piocher des
 // vidéos sur des chaînes qui ne sont pas dans CHANNEL_HANDLES : chaque vidéo
@@ -150,8 +160,8 @@ async function getChannelVideos(handle) {
 //
 // Le dédoublonnage se fait sur l'ensemble des vidéos déjà récupérées, toutes
 // chaînes confondues : si une vidéo de la playlist a déjà été vue ailleurs
-// (upload normal d'une des chaînes suivies), on ajoute juste le
-// scriptOverride sur l'entrée existante plutôt que de la dupliquer.
+// (upload normal d'une des chaînes suivies), on évite de la dupliquer — et,
+// si l'entrée a un scriptName, on l'applique sur l'entrée existante.
 async function applyPlaylistOverrides(results) {
   const existingById = new Map();
   for (const handle in results) {
@@ -165,28 +175,39 @@ async function applyPlaylistOverrides(results) {
     results._playlists = { videos: [] };
   }
 
-  for (const override of PLAYLIST_SCRIPT_OVERRIDES) {
-    log(`=== Playlist ${override.playlistId} -> script "${override.scriptName}" ===`);
+  for (const source of PLAYLIST_SOURCES) {
+    const label = source.scriptName ? `script "${source.scriptName}"` : "parsing normal de la description";
+    log(`=== Playlist ${source.playlistId} -> ${label} ===`);
 
     log("Récupération des vidéos de la playlist...");
-    const playlistVideos = await getAllVideoIds(override.playlistId);
+    const playlistVideos = await getAllVideoIds(source.playlistId);
     log(`${playlistVideos.length} vidéos trouvées, enrichissement...`);
     const enrichedPlaylistVideos = await enrichWithVideoDetails(playlistVideos);
 
     for (const video of enrichedPlaylistVideos) {
       const existing = existingById.get(video.videoId);
+
       if (existing) {
-        existing.scriptOverride = override.scriptName;
-        // On préfère la vraie chaîne d'origine si on ne l'avait pas déjà.
+        // Vidéo déjà connue : on ne l'ajoute pas une seconde fois. On force
+        // juste le script dessus si cette playlist en impose un.
+        if (source.scriptName) {
+          existing.scriptOverride = source.scriptName;
+        }
         if (!existing.ownerChannelTitle && video.ownerChannelTitle) {
           existing.ownerChannelTitle = video.ownerChannelTitle;
           existing.ownerChannelId = video.ownerChannelId;
         }
-      } else {
-        video.scriptOverride = override.scriptName;
-        results._playlists.videos.push(video);
-        existingById.set(video.videoId, video);
+        continue;
       }
+
+      if (source.scriptName) {
+        video.scriptOverride = source.scriptName;
+      }
+      // Sinon : pas de scriptOverride, la vidéo sera identifiée via sa
+      // description par le front-end, exactement comme un upload normal.
+
+      results._playlists.videos.push(video);
+      existingById.set(video.videoId, video);
     }
   }
 }

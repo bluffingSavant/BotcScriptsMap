@@ -486,7 +486,7 @@ function getListYoutubeHTML() {
           </div>
 
         </div>
-        <div id="youtubeList">
+        <div id="credits">
           <p class="text-sm text-gray-400">
             Special thanks to reddit user @iljitsch275 for curating BoTC playlists. 
           </p>
