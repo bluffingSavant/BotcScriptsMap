@@ -440,11 +440,14 @@ function getListYoutubeHTML() {
         <div class="flex items-center justify-between mb-3 gap-3 flex-wrap">
 
           <h4 class="font-semibold text-gray-700 dark:text-gray-200">
-            Videos by script (retrieved from BloodOnTheClocktower, NoRollsBarred and Adventure_Emporium)
+            Videos by script (retrieved from BloodOnTheClocktower, NoRollsBarred, Mt-Unpleasant and Adventure_Emporium)
           </h4>
 
           <div class="flex items-center gap-3">
-
+            <span
+              id="nbVideosSpan"
+              class="text-xs text-gray-400"
+            ></span>
             <span
               id="youtubeScriptCount"
               class="text-xs text-gray-400"
@@ -487,6 +490,7 @@ let taggedYoutubeVideos = null;
 function renderYoutubeList(mode) {
   const listDiv = document.getElementById("youtubeList");
   const countSpan = document.getElementById("youtubeScriptCount");
+  const nbVideosSpan = document.getElementById("youtubeVideoCount");
 
   if (!listDiv || !taggedYoutubeVideos) return;
 
@@ -501,6 +505,11 @@ function renderYoutubeList(mode) {
       countSpan.textContent =
         `${scriptCount} script${scriptCount > 1 ? "s" : ""} · ` +
         `${channelEntries.length} chaîne${channelEntries.length > 1 ? "s" : ""}`;
+    }
+
+    if (nbVideosSpan) {
+      const videoCount = taggedYoutubeVideos.length;
+      nbVideosSpan.textContent = `${videoCount} vidéo${videoCount > 1 ? "s" : ""}`;
     }
 
     listDiv.innerHTML = channelEntries
