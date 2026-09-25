@@ -309,6 +309,73 @@ function getChannelGroupedEntries(videos) {
 }
 
 
+// Return a "YYYY-MM" key for a video's publish date, or null if the
+// video has no usable date.
+function getMonthKey(video) {
+  if (!video.publishedAt) return null;
+
+  const date = new Date(video.publishedAt);
+  if (isNaN(date)) return null;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
+}
+
+
+// Turn a "YYYY-MM" key into a human-readable label, e.g. "Janvier 2025".
+function formatMonthLabel(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const date = new Date(year, month - 1, 1);
+
+  const label = date.toLocaleDateString("fr-FR", {
+    month: "long",
+    year: "numeric"
+  });
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+
+// Group already-tagged videos by month ("YYYY-MM"), each list sorted
+// by date desc. Videos without a usable date are grouped under "unknown".
+function groupByMonth(videos) {
+  const groups = new Map();
+
+  videos.forEach((video) => {
+    const key = getMonthKey(video) || "unknown";
+
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+
+    groups.get(key).push(video);
+  });
+
+  groups.forEach((vids, key) => {
+    groups.set(key, sortVideosByDateDesc(vids));
+  });
+
+  return groups;
+}
+
+
+// Group tagged videos by month, most recent month first. Returns an
+// array of [label, videos] entries, ready for rendering.
+function getSortedMonthEntries(videos) {
+  const groups = groupByMonth(videos);
+  const entries = [...groups.entries()];
+
+  entries.sort((a, b) => b[0].localeCompare(a[0]));
+
+  return entries.map(([key, vids]) => [
+    key === "unknown" ? "Date inconnue" : formatMonthLabel(key),
+    vids
+  ]);
+}
+
+
 // ============================================================
 // HTML rendering
 // ============================================================
@@ -481,6 +548,7 @@ function getListYoutubeHTML() {
               <option value="count">Sort : number of videos</option>
               <option value="channel">Sort : YouTube channel</option>
               <option value="alpha">Sort : alphabetical order</option>
+              <option value="date">Sort : chronological order</option>
             </select>
 
           </div>
@@ -534,6 +602,26 @@ function renderYoutubeList(mode) {
 
     listDiv.innerHTML = channelEntries
       .map(([channel, scriptEntries]) => renderChannelGroup(channel, scriptEntries))
+      .join("");
+
+    return;
+  }
+
+  if (mode === "date") {
+    const monthEntries = getSortedMonthEntries(taggedYoutubeVideos);
+
+    if (nbVideosSpan) {
+      const videoCount = taggedYoutubeVideos.length;
+      nbVideosSpan.textContent = `${videoCount} video${videoCount > 1 ? "s" : ""}`;
+    }
+
+    if (countSpan) {
+      countSpan.textContent =
+        `${monthEntries.length} mois`;
+    }
+
+    listDiv.innerHTML = monthEntries
+      .map(([label, videos]) => renderScriptGroup(label, videos))
       .join("");
 
     return;
