@@ -329,7 +329,7 @@ function formatMonthLabel(monthKey) {
   const [year, month] = monthKey.split("-").map(Number);
   const date = new Date(year, month - 1, 1);
 
-  const label = date.toLocaleDateString("fr-FR", {
+  const label = date.toLocaleDateString("en-GB", {
     month: "long",
     year: "numeric"
   });
