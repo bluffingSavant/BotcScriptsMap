@@ -615,11 +615,6 @@ function renderYoutubeList(mode) {
       nbVideosSpan.textContent = `${videoCount} video${videoCount > 1 ? "s" : ""}`;
     }
 
-    if (countSpan) {
-      countSpan.textContent =
-        `${monthEntries.length} mois`;
-    }
-
     listDiv.innerHTML = monthEntries
       .map(([label, videos]) => renderScriptGroup(label, videos))
       .join("");
