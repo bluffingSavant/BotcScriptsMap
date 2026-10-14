@@ -31,6 +31,69 @@ html:not(.dark) .home-intro-card {
   background: #dfd2b3;
 }
 
+html:not(.dark) #pageContent .module-page {
+  --module-text-strong: #342b1d;
+  --module-raised-surface: #f5ecd9;
+  --module-control-surface: #f6eddb;
+  --module-control-text: #342b1d;
+}
+
+html:not(.dark) #pageContent .module-page .bg-white {
+  background: #dfd2b3;
+}
+
+html:not(.dark) #pageContent .module-page .bg-gray-50 {
+  background: #f3ead7;
+}
+
+html:not(.dark) #pageContent .module-page .bg-gray-100 {
+  background: #e8dcc4;
+}
+
+html:not(.dark) #pageContent .module-page .bg-gray-200 {
+  background: #d8c9a8;
+}
+
+html:not(.dark) #pageContent .module-page .text-gray-400 {
+  color: #5b5142;
+}
+
+html:not(.dark) #pageContent .module-page .text-gray-500 {
+  color: #4b4236;
+}
+
+html:not(.dark) #pageContent .module-page .text-gray-600 {
+  color: #3f382e;
+}
+
+html:not(.dark) #pageContent .module-page .text-gray-700 {
+  color: #332d25;
+}
+
+html:not(.dark) #pageContent .module-page .text-gray-800 {
+  color: #28231d;
+}
+
+html:not(.dark) #pageContent .module-page .border-gray-100\/80 {
+  border-color: rgba(129, 109, 70, 0.35);
+}
+
+html:not(.dark) #pageContent .module-page .border-gray-200 {
+  border-color: #b5a781;
+}
+
+html:not(.dark) #pageContent .module-page .hover\:bg-gray-50:hover {
+  background: #d0bf98;
+}
+
+html:not(.dark) #pageContent .module-page .hover\:bg-gray-100:hover {
+  background: #c6b487;
+}
+
+html:not(.dark) #pageContent .module-page .hover\:bg-gray-200:hover {
+  background: #b9a77d;
+}
+
 .bg-white {
   background: #e9e3cb;
 }
@@ -80,6 +143,13 @@ html:not(.dark) #sidebar nav a.text-indigo-700 i {
 .dark body {
   background: #111827;
   color: #e5e7eb;
+}
+
+.dark #pageContent .module-page {
+  --module-text-strong: #fff;
+  --module-raised-surface: #374151;
+  --module-control-surface: #fff;
+  --module-control-text: #000;
 }
 
 .dark #sidebar nav a {

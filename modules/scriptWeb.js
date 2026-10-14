@@ -1,6 +1,6 @@
 function getScriptsWebHTML() {
   return `
-    <section class="home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="scriptsWebDiv" style="height: 600px;"></div>
       <div class="flex flex-col justify-between" style="height: 600px;">
         <h4 class="font-semibold text-gray-700 dark:text-gray-200 items-center justify-center" id="combination"></h4>
@@ -8,7 +8,7 @@ function getScriptsWebHTML() {
         </div>
       </div>
     </section>
-    <section class="home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="myList" style="width: 100%"></div>
     </section>
   `;
@@ -306,7 +306,7 @@ function renderCharacterLists(diagram) {
                                       .sort((a, b) => a.id.localeCompare(b.id));;
     charactersInTeam.forEach(character => {
       const item = document.createElement("div");
-      item.style.color = "#fff"
+      item.style.color = "var(--module-text-strong)"
       item.textContent = character.id;
       item.style.textAlign = "center";
       item.dataset.key = character.id;
@@ -394,7 +394,7 @@ function updateScriptsList() {
     heading.textContent = 'No available script with these characters together.';
     heading.style.fontWeight = 'bold';
     heading.style.marginBottom = '6px';
-    heading.style.color = "#fff";
+    heading.style.color = "var(--module-text-strong)";
     heading.style.cursor = 'default';
     return;
   }
@@ -410,7 +410,7 @@ function updateScriptsList() {
   heading.textContent = groupName;
   heading.style.fontWeight = 'bold';
   heading.style.marginBottom = '6px';
-  heading.style.color = "#fff"
+  heading.style.color = "var(--module-text-strong)"
   heading.style.userSelect = 'none';
 
   const scriptsContainer = document.createElement('div');
@@ -421,7 +421,7 @@ function updateScriptsList() {
     item.style.gridTemplateColumns = "1fr auto";
     item.style.alignItems = "center";
     item.style.padding = "8px";
-    item.style.color = "#fff"
+    item.style.color = "var(--module-text-strong)"
     item.style.borderRadius = "6px";
     item.style.marginBottom = "4px";
     item.style.userSelect = "none";
@@ -451,11 +451,11 @@ function updateScriptsList() {
     openBtn.style.marginLeft = "8px";
     openBtn.style.padding = "2px 8px";
     openBtn.style.fontSize = "12px";
-    openBtn.style.color = "#000"
+    openBtn.style.color = "var(--module-control-text)"
     openBtn.style.borderRadius = "4px";
     openBtn.style.border = "1px solid #ccc";
     openBtn.style.cursor = "pointer";
-    openBtn.style.background = "#fff";
+    openBtn.style.background = "var(--module-control-surface)";
     openBtn.onclick = (e) => {
       e.stopPropagation();
       const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
@@ -469,4 +469,3 @@ function updateScriptsList() {
   column.appendChild(scriptsContainer);
   statsDiv.appendChild(column);
 }
-

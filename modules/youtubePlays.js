@@ -415,7 +415,7 @@ function renderVideoRow(video) {
           ${escapeHtml(video.title)}
         </p>
 
-        <p class="text-xs text-gray-400">
+        <p class="text-xs text-gray-600 dark:text-gray-400">
           ${date}${channelBadge}
         </p>
       </div>
@@ -436,7 +436,7 @@ function renderScriptGroup(scriptName, videos) {
 
         <span class="flex items-center gap-2">
 
-          <span class="text-xs text-gray-400">
+          <span class="text-xs text-gray-600 dark:text-gray-400">
             ${videos.length} video${videos.length > 1 ? "s" : ""}
           </span>
 
@@ -484,7 +484,7 @@ function renderChannelGroup(channel, scriptEntries) {
 
         <span class="flex items-center gap-2">
 
-          <span class="text-xs text-gray-400">
+          <span class="text-xs text-gray-600 dark:text-gray-400">
             ${videoCount} video${videoCount > 1 ? "s" : ""}
           </span>
 
@@ -521,7 +521,7 @@ function renderChannelGroup(channel, scriptEntries) {
 
 function getListYoutubeHTML() {
   return `
-    <section class="grid grid-cols-1 gap-6">
+    <section class="module-page grid grid-cols-1 gap-6">
 
       <div class="bg-white dark:bg-[#1f2937] p-5 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 card-hover">
 
@@ -534,11 +534,11 @@ function getListYoutubeHTML() {
           <div class="flex items-center gap-3">
             <span
               id="nbVideosSpan"
-              class="text-xs text-gray-400"
+              class="text-xs text-gray-600 dark:text-gray-400"
             ></span>
             <span
               id="youtubeScriptCount"
-              class="text-xs text-gray-400"
+              class="text-xs text-gray-600 dark:text-gray-400"
             ></span>
 
             <select
@@ -555,12 +555,12 @@ function getListYoutubeHTML() {
 
         </div>
         <div id="credits">
-          <p class="text-sm text-gray-400">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
             Special thanks to reddit user @iljitsch275 for curating BoTC playlists. 
           </p>
         </div>
         <div id="youtubeList">
-          <p class="text-sm text-gray-400">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
             Loading...
           </p>
         </div>

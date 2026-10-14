@@ -2,7 +2,7 @@
 function getHomepageHTML() {
   return `
     <!-- stats -->
-    <div class="home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
+    <div class="module-page home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
       <div class="flex items-center justify-between">
       <div>
         <p class="text-sm text-gray-800 dark:text-gray-500 font-medium">Welcome to Botc ScriptMap (WIP)</p>

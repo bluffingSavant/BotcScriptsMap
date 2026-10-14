@@ -1,7 +1,7 @@
 function getScriptsSimilarityHTML() {
   return `
     
-    <section class="home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-5 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-5 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
         
         <div id="TB" onclick="selectScript('TB')"
             class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover flex items-center justify-center">
@@ -49,18 +49,18 @@ function getScriptsSimilarityHTML() {
             <div id="similarityList" class="flex flex-col gap-1" style="height: 250px; overflow-y: auto;"></div>
         </div>
     </section>
-    <section class="home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="displayAreaDiv" style="width: 100%">
         <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1">Choose a base script to display similar scripts.</h3>
         <h3 id="bootleggerDiv" class="text-l font-bold text-gray-800 dark:text-gray-100 mt-1" style="margin-bottom:0.5cm;">Bootlegger: <span id="bootleggerText"></span></h3>
         <section class="grid grid-cols-7 sm:grid-cols-7 xl:grid-cols-7 gap-6">
-            <div id="TFDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
-            <div id="OutsidersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
-            <div id="MinionDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
-            <div id="DemonDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
-            <div id="TravellersDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
-            <div id="LoricDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
-            <div id="FabledDiv" class="text-sm text-gray-400 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
+            <div id="TFDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl ">Townsfolk</div>
+            <div id="OutsidersDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
+            <div id="MinionDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
+            <div id="DemonDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
+            <div id="TravellersDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Outsiders</div>
+            <div id="LoricDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Minions</div>
+            <div id="FabledDiv" class="text-sm text-gray-700 dark:text-gray-500 font-medium rounded-2xl">Demons</div>
         </section>
             </section>
       </div>
@@ -188,7 +188,8 @@ function updateSimilar(script) {
         scriptItem.style.border = "1px solid #ccc";
         scriptItem.style.padding = "2px 8px";
         scriptItem.style.borderRadius = "4px";
-        scriptItem.style.color = "#fff";
+        scriptItem.style.color = "var(--module-text-strong)";
+        scriptItem.style.backgroundColor = "var(--module-raised-surface)";
         const str = getString(script);
         scriptItem.textContent = script[0].title + ' (' + script[1]*100 + '%) - ' + str;
         listContainer.appendChild(scriptItem);
@@ -306,7 +307,7 @@ function renderCharacterList(baseScript, added = [], removed = []) {
         const isRemoved = (removed || []).includes(char);
 
         const charItem = document.createElement("div")
-        charItem.style.color = '#fff'
+        charItem.style.color = 'var(--module-text-strong)'
         charItem.style.flex = '1';
         charItem.style.minWidth = '0';
         charItem.style.borderRadius = '10px';
