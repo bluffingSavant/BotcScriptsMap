@@ -2,10 +2,10 @@
 function getHomepageHTML() {
   return `
     <!-- stats -->
-    <div class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
+    <div class="home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover">
       <div class="flex items-center justify-between">
       <div>
-        <p class="text-sm text-gray-400 dark:text-gray-500 font-medium">Welcome to Botc ScriptMap (WIP)</p>
+        <p class="text-sm text-gray-800 dark:text-gray-500 font-medium">Welcome to Botc ScriptMap (WIP)</p>
         <h3 id="textDiv" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mt-1"></h3>
       </div>
     </div>

@@ -83,7 +83,7 @@ function renderPage(page) {
     case 'homepage': html = getHomepageHTML(); break;
     case 'dashboard': html = getDashboardHTML(); break;
     case 'character combinations': html = getScriptsWebHTML(); break;
-    case 'scriptSimilarity': html = getScriptsSimilarityHTML(); break;
+    case 'script similarity': html = getScriptsSimilarityHTML(); break;
     case 'youtube': html = getListYoutubeHTML(); break;
     default: html = getHomepageHTML();
   }

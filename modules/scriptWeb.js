@@ -1,6 +1,6 @@
 function getScriptsWebHTML() {
   return `
-    <section class="bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="scriptsWebDiv" style="height: 600px;"></div>
       <div class="flex flex-col justify-between" style="height: 600px;">
         <h4 class="font-semibold text-gray-700 dark:text-gray-200 items-center justify-center" id="combination"></h4>
@@ -8,7 +8,7 @@ function getScriptsWebHTML() {
         </div>
       </div>
     </section>
-    <section class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="home-intro-card bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
       <div id="myList" style="width: 100%"></div>
     </section>
   `;

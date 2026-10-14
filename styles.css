@@ -18,10 +18,81 @@ body {
   width: 100%;
 }
 
+/* light mode surfaces */
+body {
+  background: #ebdfc0;
+}
+
+html:not(.dark) #sidebar {
+  background: #faf1e3;
+}
+
+html:not(.dark) .home-intro-card {
+  background: #dfd2b3;
+}
+
+.bg-white {
+  background: #e9e3cb;
+}
+
+.bg-gray-50 {
+  background: #a1a1a1;
+}
+
+html:not(.dark) .bg-gray-50 {
+  background: #717171;
+}
+
+html:not(.dark) .bg-indigo-50 {
+  background: #d8cfb9;
+}
+
+.bg-gray-100 {
+  background: #f1f5f9;
+}
+
+.bg-gray-200 {
+  background: #e2e8f0;
+}
+
+.bg-white\/70 {
+  background: rgba(255, 254, 250, 0.82);
+}
+
+html:not(.dark) #sidebar nav a {
+  color: #475569;
+}
+
+html:not(.dark) #sidebar nav a i {
+  color: #64748b;
+}
+
+html:not(.dark) #sidebar nav a:hover {
+  background: #d9c9a5;
+}
+
+html:not(.dark) #sidebar nav a.text-indigo-700,
+html:not(.dark) #sidebar nav a.text-indigo-700 i {
+  color: #6f0d95;
+}
+
 /* dark mode helper (applied via JS) */
 .dark body {
   background: #111827;
   color: #e5e7eb;
+}
+
+.dark #sidebar nav a {
+  color: #d1d5db;
+}
+
+.dark #sidebar nav a i {
+  color: #9ca3af;
+}
+
+.dark #sidebar nav a.text-indigo-700,
+.dark #sidebar nav a.text-indigo-700 i {
+  color: #a5b4fc;
 }
 
 .dark .bg-white {
@@ -43,6 +114,7 @@ body {
 .dark .text-gray-400 {
   color: #9ca3af;
 }
+
 
 .dark .text-gray-800 {
   color: #f3f4f6;
