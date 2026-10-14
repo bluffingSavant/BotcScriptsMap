@@ -1,13 +1,21 @@
 let youtubeVideosData = null;
+let youtubeVideosDataPromise = null;
 
 async function loadYoutubeVideosData() {
   if (youtubeVideosData) return youtubeVideosData;
+  if (!youtubeVideosDataPromise) {
+    youtubeVideosDataPromise = (async () => {
+      const response = await fetch("youtube_data/youtube_videos.json");
+      if (!response.ok) throw new Error(`HTTP error ${response.status}`);
 
-  const response = await fetch("youtube_data/youtube_videos.json");
-  if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
-  youtubeVideosData = await response.json();
-  return youtubeVideosData;
+      youtubeVideosData = await response.json();
+      return youtubeVideosData;
+    })().catch(error => {
+      youtubeVideosDataPromise = null;
+      throw error;
+    });
+  }
+  return youtubeVideosDataPromise;
 }
 
 // ============================================================
