@@ -177,7 +177,7 @@ async function initScriptsWeb() {
             const sz = go.Size.parse(sizeStr);
             return new go.Size(sz.width * 0.8, sz.height * 0.8);
           })
-          .bind("source", "key", (key) => `icons/characters/${key}.svg`)
+          .bind("source", "key", (key) => `icons/characters/${key[0]}/${key[1]}_g.webp`)
       )
       .add(
         new go.Picture({ alignment: go.Spot.Center, alignmentFocus: go.Spot.Center })
@@ -244,7 +244,7 @@ function applyToggleStyle(item, team) {
 function updateGraph(diagram) {
   const keys = allTokens
     .filter(character => selectedCharacters.has(character.id))
-    .map(character => ({ key: character.id, size: "150 150" }));
+    .map(character => ({ key: [character.team, character.id], size: "150 150" }));
   const links = allLinks
     .filter(([pair]) => {
       const [ch1, ch2] = pair.split('-');

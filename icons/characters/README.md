@@ -1,1 +1,0 @@
-All the icons were extracted from: https://github.com/tomozbot/botc-icons/
