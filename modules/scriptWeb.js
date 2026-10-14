@@ -15,8 +15,11 @@ function getScriptsWebHTML() {
 }
 
 let scriptsData = null;
+let scriptsDataPromise = null;
 let base3_json = null;
+let base3DataPromise = null;
 let scriptsByCharacter = {};
+let scriptsLinksLoaded = false;
 
 function buildScriptsByCharacter() {
   scriptsByCharacter = {};
@@ -29,16 +32,43 @@ function buildScriptsByCharacter() {
 }
 async function getScriptsData() {
   if (scriptsData) return scriptsData;
-  const response = await fetch("botc_scripts/all_scripts.json");
-  base3_json = await (await fetch("botc_scripts/base3.json")).json();
-  if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
-  const jsonData = await response.json();
-  scriptsData = jsonData;
-  totalScripts = scriptsData.length;
+  if (!scriptsDataPromise) {
+    scriptsDataPromise = (async () => {
+      const response = await fetch("botc_scripts/all_scripts.json");
+      if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+
+      scriptsData = await response.json();
+      totalScripts = scriptsData.length;
+      return scriptsData;
+    })().catch(error => {
+      scriptsDataPromise = null;
+      throw error;
+    });
+  }
+  return scriptsDataPromise;
+}
+
+async function getBase3Data() {
+  if (base3_json) return base3_json;
+  if (!base3DataPromise) {
+    base3DataPromise = (async () => {
+      const response = await fetch("botc_scripts/base3.json");
+      if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+
+      base3_json = await response.json();
+      return base3_json;
+    })().catch(error => {
+      base3DataPromise = null;
+      throw error;
+    });
+  }
+  return base3DataPromise;
 }
 
 
 async function getLinks() {
+  if (scriptsLinksLoaded) return;
+
   const counts = {};
   const scriptsOfPair = {};
   try {
@@ -50,7 +80,9 @@ async function getLinks() {
         for (let j = i + 1; j < list_of_char.length; j++) {
           const character1 = list_of_char[i];
           const character2 = list_of_char[j];
-          const pairKey = [character1, character2].sort().join('-');
+          const pairKey = character1 < character2
+            ? `${character1}-${character2}`
+            : `${character2}-${character1}`;
           counts[pairKey] = (counts[pairKey] || 0) + 1;
           scriptsOfPair[pairKey] = scriptsOfPair[pairKey] || [];
           scriptsOfPair[pairKey].push(scripts[index][1]); // Store the index of the script where this pair appears
@@ -61,6 +93,7 @@ async function getLinks() {
     const sortedMap = newMap.sort((item1, item2) => item2[1] - item1[1]);
     allLinks = sortedMap;
     allScriptsOfPair = scriptsOfPair;
+    scriptsLinksLoaded = true;
   } catch (err) {
     console.error("Error while loading links between characters:", err);
   }
@@ -68,10 +101,8 @@ async function getLinks() {
 
 async function getCharacters() {
   try {
-    const roles = await fetch("official_data/roles.json")
-      .then(response => response.json())
-      .then(json => json.map(item => ({ id: item.id, team: item.team })));
-    allTokens = roles;
+    const roles = await loadRolesData();
+    allTokens = roles.map(item => ({ id: item.id, team: item.team }));
   } catch (err) {
     console.error("Erreur lors du chargement de rolesData:", err);
     return [];
@@ -148,7 +179,6 @@ const TEAM_LABELS = {
 
 async function initScriptsWeb() {
   if (!window.chartInstances) window.chartInstances = {};
-  getScriptsData();
   const div = document.getElementById('scriptsWebDiv');
   if (!div) return;
 
@@ -458,8 +488,14 @@ function updateScriptsList() {
     copyBtn.style.background = "var(--module-control-surface)";
     copyBtn.onclick = (e) => {
       e.stopPropagation();
-      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
-      window.open(url, "_blank");
+      const scriptJson = JSON.stringify(script, null, 2);
+      navigator.clipboard.writeText(scriptJson).then(() => {
+        alert("Script JSON copied to clipboard!");
+      }).catch(err => {
+        console.error("Failed to copy script JSON: ", err);
+        alert("Failed to copy script JSON. Please try again.");
+      });
+    };
 
     const openBtn = document.createElement("button");
     openBtn.textContent = "open";
@@ -473,13 +509,8 @@ function updateScriptsList() {
     openBtn.style.background = "var(--module-control-surface)";
     openBtn.onclick = (e) => {
       e.stopPropagation();
-      const scriptJson = JSON.stringify(script, null, 2);
-      navigator.clipboard.writeText(scriptJson).then(() => {
-        alert("Script JSON copied to clipboard!");
-      }).catch(err => {
-        console.error("Failed to copy script JSON: ", err);
-        alert("Failed to copy script JSON. Please try again.");
-      });
+      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
+      window.open(url, "_blank");
     };
     item.appendChild(copyBtn);
     item.appendChild(openBtn);

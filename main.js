@@ -93,20 +93,28 @@ function renderPage(page) {
   }, 50);
 }
 
-function initPage(page) {
+async function initPage(page) {
   if (page == 'homepage') {
     initHomePage();
   }
   else if (page === 'dashboard') {
+    await Promise.all([getScriptsData(), loadRolesData()]);
+    await loadScriptsData();
+    if (currentPage !== page) return;
     initChartsForPage();
   } else if (page === 'character combinations') {
+    await Promise.all([getScriptsData(), getCharacters()]);
+    await getLinks();
+    if (currentPage !== page) return;
     initScriptsWeb();
   }
-  else if (page === 'scriptSimilarity') {
+  else if (page === 'script similarity') {
+    await Promise.all([getScriptsData(), getBase3Data(), getCharacters()]);
+    if (currentPage !== page) return;
     initSlider();
   }
-  else if (page === 'youtube') {
-    initListYoutube();
+  else if (page === 'played on youtube') {
+    await initListYoutube();
   }
 }
 
@@ -123,11 +131,3 @@ document.addEventListener('keydown', (e) => {
 
 let allTokens = [];
 let totalScripts = 0;
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await Promise.all([loadRolesData(), getScriptsData(), getCharacters(), loadYoutubeVideosData()]);
-  await Promise.all([ getLinks(), loadScriptsData()]);
-  updateDashboardStats();
-  initChartsForPage();
-  initScriptsWeb();
-});
