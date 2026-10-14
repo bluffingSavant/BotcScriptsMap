@@ -177,11 +177,7 @@ async function initScriptsWeb() {
             const sz = go.Size.parse(sizeStr);
             return new go.Size(sz.width * 0.8, sz.height * 0.8);
           })
-          .bind("source", "key", (key) => {
-            const team = allTokens.find(character => character.id === key)?.team;
-            const suffix = ["townsfolk", "outsider", "minion", "demon"].includes(team) ? "" : "_g";
-            return `icons/characters/${key}${suffix}.webp`;
-          })
+          .bind("source", "key", (key) => `icons/characters/${key}.webp`)
       )
       .add(
         new go.Picture({ alignment: go.Spot.Center, alignmentFocus: go.Spot.Center })
