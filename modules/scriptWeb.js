@@ -446,6 +446,21 @@ function updateScriptsList() {
     textGroup.appendChild(author);
     item.appendChild(textGroup);
 
+    const copyBtn = document.createElement("button");
+    copyBtn.textContent = "copy Json";
+    copyBtn.style.marginLeft = "8px";
+    copyBtn.style.padding = "2px 8px";
+    copyBtn.style.fontSize = "12px";
+    copyBtn.style.color = "var(--module-control-text)"
+    copyBtn.style.borderRadius = "4px";
+    copyBtn.style.border = "1px solid #ccc";
+    copyBtn.style.cursor = "pointer";
+    copyBtn.style.background = "var(--module-control-surface)";
+    copyBtn.onclick = (e) => {
+      e.stopPropagation();
+      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
+      window.open(url, "_blank");
+
     const openBtn = document.createElement("button");
     openBtn.textContent = "open";
     openBtn.style.marginLeft = "8px";
@@ -458,9 +473,15 @@ function updateScriptsList() {
     openBtn.style.background = "var(--module-control-surface)";
     openBtn.onclick = (e) => {
       e.stopPropagation();
-      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
-      window.open(url, "_blank");
+      const scriptJson = JSON.stringify(script, null, 2);
+      navigator.clipboard.writeText(scriptJson).then(() => {
+        alert("Script JSON copied to clipboard!");
+      }).catch(err => {
+        console.error("Failed to copy script JSON: ", err);
+        alert("Failed to copy script JSON. Please try again.");
+      });
     };
+    item.appendChild(copyBtn);
     item.appendChild(openBtn);
 
     scriptsContainer.appendChild(item);
