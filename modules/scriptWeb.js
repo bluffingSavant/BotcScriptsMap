@@ -34,7 +34,7 @@ async function getScriptsData() {
   if (scriptsData) return scriptsData;
   if (!scriptsDataPromise) {
     scriptsDataPromise = (async () => {
-      const response = await fetch("botc_scripts/all_scripts.json");
+      const response = await fetch("botc_scripts/browser_index.json");
       if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
 
       scriptsData = await response.json();
@@ -70,12 +70,9 @@ async function getLinks() {
   if (scriptsLinksLoaded) return;
 
   const counts = {};
-  const scriptsOfPair = {};
   try {
-    const scripts = scriptsData.map(item => {return [item.characters, item.pk]});
-
-    for (let index = 0; index < scripts.length; index++) {
-      const list_of_char = scripts[index][0];
+    for (const script of scriptsData) {
+      const list_of_char = script.characters;
       for (let i = 0; i < list_of_char.length; i++) {
         for (let j = i + 1; j < list_of_char.length; j++) {
           const character1 = list_of_char[i];
@@ -84,15 +81,12 @@ async function getLinks() {
             ? `${character1}-${character2}`
             : `${character2}-${character1}`;
           counts[pairKey] = (counts[pairKey] || 0) + 1;
-          scriptsOfPair[pairKey] = scriptsOfPair[pairKey] || [];
-          scriptsOfPair[pairKey].push(scripts[index][1]); // Store the index of the script where this pair appears
         }
       }
     }
     const newMap = Object.entries(counts);
     const sortedMap = newMap.sort((item1, item2) => item2[1] - item1[1]);
     allLinks = sortedMap;
-    allScriptsOfPair = scriptsOfPair;
     scriptsLinksLoaded = true;
   } catch (err) {
     console.error("Error while loading links between characters:", err);
@@ -142,7 +136,6 @@ function makeCurvedTextDataUri(text, diameter, opts = {}) {
 
 // ===== ÉTAT GLOBAL (cache + sélection courante) =====
 let allLinks = [];
-let scriptsOfPair = {};
 let selectedCharacters = new Set();
 
 const TEAM_COLORS = {

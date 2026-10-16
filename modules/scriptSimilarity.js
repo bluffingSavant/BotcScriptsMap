@@ -144,10 +144,10 @@ function findSimilarScripts(script) {
         script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams)
         if (script_a === script_b) { continue; }
         IoU = jaccard(script_a,script_b)
-        if (IoU === 1 && !scriptsData[index].content[0].bootlegger) {continue;} // Avoid exact same script to appear.
+        if (IoU === 1 && !scriptsData[index].bootlegger) {continue;} // Avoid exact same script to appear.
         if (IoU > threshold/100) {
             const [added, removed] = difference(script_a, script_b)
-            if (scriptsData[index].content[0].bootlegger) {
+            if (scriptsData[index].bootlegger) {
                 added.push("bootlegger")
             }
             mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
@@ -236,8 +236,8 @@ function compareScripts(newScript, baseScript, added, removed) {
     
     const bootleggerText = document.getElementById('bootleggerText');
     bootleggerText.style.color = '#ca2525';
-    if (newScript.content[0].bootlegger) {
-        bootleggerText.textContent = newScript.content[0].bootlegger;
+    if (newScript.bootlegger) {
+        bootleggerText.textContent = newScript.bootlegger;
     } else {
         bootleggerText.textContent = "No bootlegger information available.";
     }

@@ -13,6 +13,7 @@ API_BASE = "https://botcscripts.com/api"
 OUTPUT_DIR = Path("botc_scripts")
 STATE_FILE = OUTPUT_DIR / "extraction_state.json"
 DATABASE_FILE = OUTPUT_DIR / "all_scripts.json"
+BROWSER_INDEX_FILE = OUTPUT_DIR / "browser_index.json"
 # Small delay between page requests
 REQUEST_DELAY = 0.2
 # HTTP timeout
@@ -271,6 +272,33 @@ def load_existing_database():
         print(f"!! Could not load {DATABASE_FILE}: {error}")
         return {}
 
+
+def write_browser_index(scripts):
+    """Write only the script fields used by the website."""
+    browser_scripts = []
+    for script in scripts:
+        metadata = next(
+            (
+                item
+                for item in script.get("content", [])
+                if item.get("id") == "_meta"
+            ),
+            {},
+        )
+        browser_scripts.append({
+            "pk": script.get("pk"),
+            "script_id_original": script.get("script_id_original"),
+            "version": script.get("version"),
+            "title": script.get("title"),
+            "author": script.get("author"),
+            "characters": script.get("characters", []),
+            "bootlegger": metadata.get("bootlegger"),
+        })
+
+    with BROWSER_INDEX_FILE.open("w", encoding="utf-8") as f:
+        json.dump(browser_scripts, f, ensure_ascii=False, separators=(",", ":"))
+
+
 # DOWNLOAD / UPDATE
 def download_all_scripts():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -353,6 +381,8 @@ def download_all_scripts():
 
     with DATABASE_FILE.open("w", encoding="utf-8") as f:
         json.dump(sorted_scripts, f, ensure_ascii=False, indent=2)
+
+    write_browser_index(sorted_scripts)
 
     # Update extraction state only after all data has been saved.
     if highest_new_id > last_extracted_id:
