@@ -482,6 +482,7 @@ function updateScriptsList() {
     copyBtn.onclick = (e) => {
       e.stopPropagation();
       const scriptJson = JSON.stringify(script, null, 2);
+      scriptJson = formatJson(scriptJson);
       navigator.clipboard.writeText(scriptJson).then(() => {
         alert("Script JSON copied to clipboard!");
       }).catch(err => {
@@ -513,4 +514,16 @@ function updateScriptsList() {
 
   column.appendChild(scriptsContainer);
   statsDiv.appendChild(column);
+}
+
+
+function formatJson(jsonString) {
+  var metadata = {"id": jsonString.script_id_original, 
+                  "name": jsonString.author, 
+                  "author": jsonString.author,};
+  var formattedJson = [metadata]
+  for (character of jsonString.characters) {
+    formattedJson.push(characte);
+  }
+  return formattedJson;
 }
