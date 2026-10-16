@@ -523,7 +523,7 @@ function formatJson(jsonString) {
                   "author": jsonString.author,};
   var formattedJson = [metadata]
   for (character of jsonString.characters) {
-    formattedJson.push(characte);
+    formattedJson.push(character);
   }
   return formattedJson;
 }
