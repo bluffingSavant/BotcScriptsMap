@@ -441,7 +441,7 @@ function updateScriptsList() {
   scripts.forEach(script => {
     const item = document.createElement("div");
     item.style.display = "grid";
-    item.style.gridTemplateColumns = "1fr auto";
+    item.style.gridTemplateColumns = "minmax(0, 1fr) auto auto";
     item.style.alignItems = "center";
     item.style.padding = "8px";
     item.style.color = "var(--module-text-strong)"
@@ -471,7 +471,7 @@ function updateScriptsList() {
 
     const copyBtn = document.createElement("button");
     copyBtn.textContent = "copy Json";
-    copyBtn.style.marginLeft = "8px";
+    copyBtn.style.marginLeft = "4px";
     copyBtn.style.padding = "2px 8px";
     copyBtn.style.fontSize = "12px";
     copyBtn.style.color = "var(--module-control-text)"
@@ -493,7 +493,7 @@ function updateScriptsList() {
 
     const openBtn = document.createElement("button");
     openBtn.textContent = "open";
-    openBtn.style.marginLeft = "8px";
+    openBtn.style.marginLeft = "4px";
     openBtn.style.padding = "2px 8px";
     openBtn.style.fontSize = "12px";
     openBtn.style.color = "var(--module-control-text)"
