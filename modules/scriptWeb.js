@@ -481,8 +481,8 @@ function updateScriptsList() {
     copyBtn.style.background = "var(--module-control-surface)";
     copyBtn.onclick = (e) => {
       e.stopPropagation();
-      const scriptJson = JSON.stringify(script, null, 2);
-      var formattedJson = formatJson(scriptJson);
+      var formattedJson = copyJson(script);
+      console.log("Formatted JSON to copy: ", formattedJson);
       navigator.clipboard.writeText(formattedJson).then(() => {
         alert("Script JSON copied to clipboard!");
       }).catch(err => {
@@ -517,13 +517,19 @@ function updateScriptsList() {
 }
 
 
-function formatJson(jsonString) {
-  var metadata = {"id": jsonString.script_id_original, 
-                  "name": jsonString.author, 
-                  "author": jsonString.author,};
+function formatJson(scriptData) {
+  var metadata = {"id": "_meta", 
+                  "name": scriptData.title, 
+                  "author": scriptData.author,};
   var formattedJson = [metadata]
-  for (character of jsonString.characters) {
+  scriptData.characters.forEach(character => {
     formattedJson.push(character);
-  }
+  });
   return formattedJson;
+}
+
+function copyJson(scriptData) {
+  const result = formatJson(scriptData);
+  const jsonString = JSON.stringify(result);
+  return jsonString;
 }
