@@ -7,7 +7,7 @@ async function loadYoutubeVideosData() {
     youtubeVideosDataPromise = (async () => {
       const response = await fetch("youtube_data/youtube_videos.json");
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
+      
       youtubeVideosData = await response.json();
       return youtubeVideosData;
     })().catch(error => {
@@ -649,7 +649,7 @@ function renderYoutubeList(mode) {
 async function initListYoutube() {
   const listDiv = document.getElementById("youtubeList");
   const sortSelect = document.getElementById("youtubeSortSelect");
-
+  console.log("Initializing YouTube list...");
   if (!listDiv) return;
 
   try {

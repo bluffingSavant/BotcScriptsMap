@@ -84,7 +84,7 @@ function renderPage(page) {
     case 'dashboard': html = getDashboardHTML(); break;
     case 'character combinations': html = getScriptsWebHTML(); break;
     case 'script similarity': html = getScriptsSimilarityHTML(); break;
-    case 'youtube': html = getListYoutubeHTML(); break;
+    case 'played on youtube': html = getListYoutubeHTML(); break;
     default: html = getHomepageHTML();
   }
   container.innerHTML = html;

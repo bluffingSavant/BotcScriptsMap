@@ -482,7 +482,6 @@ function updateScriptsList() {
     copyBtn.onclick = (e) => {
       e.stopPropagation();
       var formattedJson = copyJson(script);
-      console.log("Formatted JSON to copy: ", formattedJson);
       navigator.clipboard.writeText(formattedJson).then(() => {
         alert("Script JSON copied to clipboard!");
       }).catch(err => {
