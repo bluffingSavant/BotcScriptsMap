@@ -2,6 +2,16 @@
 let currentPage = 'homepage';
 let darkMode = localStorage.getItem('darkMode') === 'true' || false;
 let chartsInitialized = {};
+const pageHashes = {
+  homepage: '#homepage',
+  'script similarity': '#script-similarity',
+  dashboard: '#dashboard',
+  'character combinations': '#character-combinations',
+  'played on youtube': '#played-on-youtube'
+};
+const pagesByHash = Object.fromEntries(
+  Object.entries(pageHashes).map(([page, hash]) => [hash, page])
+);
 // ===== DARK MODE =====
 function applyDarkMode() {
   if (darkMode) {
@@ -36,7 +46,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ===== PAGE SWITCHER =====
-function switchPage(page) {
+function switchPage(page, updateUrl = true) {
+  if (updateUrl && pageHashes[page] && window.location.hash !== pageHashes[page]) {
+    window.location.hash = pageHashes[page];
+  }
   currentPage = page;
   document.getElementById('pageTitle').innerText = page.charAt(0).toUpperCase() + page.slice(1);
   renderPage(page);
@@ -53,6 +66,13 @@ function switchPage(page) {
     }
   });
 }
+
+window.addEventListener('hashchange', () => {
+  const page = pagesByHash[window.location.hash];
+  if (page && page !== currentPage) {
+    switchPage(page, false);
+  }
+});
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -121,7 +141,7 @@ async function initPage(page) {
 
 // ===== INIT =====
 applyDarkMode();
-renderPage('homepage');
+switchPage(pagesByHash[window.location.hash] || 'homepage', false);
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {

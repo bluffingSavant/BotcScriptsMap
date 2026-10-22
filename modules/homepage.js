@@ -25,7 +25,11 @@ function initHomePage() {
         <li>Played on Youtube: Find videos from diverse youtube channels where the scripts are played. For now the retrieval is automatic but incomplete. I'm working on finding a better way to retrieve and associate these videos with the corresponding scripts.</li>
       </ul>
       <br />
-        <li> Change logs: Added a broader youtube videos retrieval and a chronological sort for the youtube videos.
+      Change logs:
+      <ul style="margin-top: 8px; padding-left: 20px; list-style-type: disc;">
+        <li>Added a broader youtube videos retrieval and a chronological sort for the youtube videos.</li>
+        <li>Added a "copyJson" feature to copy the JSON representation of a script and be able to paste it directly on the script tool website.</li>
+        </ul>
       <br />
       This is still Work In Progress and suggestions are welcome on the <a href=https://www.reddit.com/r/BloodOnTheClocktower/comments/1vx09zu/a_new_tool_to_find_scripts/><span style='color: red;'>reddit thread<span style='color: red;'></a>.<br />
       Last update of the database: 22 october 2026
