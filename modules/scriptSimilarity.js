@@ -248,7 +248,15 @@ function updateText(script) {
 
 function compareScripts(newScript, baseScript, added, removed) {
     const displayAreaDiv = document.getElementById('textDiv')
-    displayAreaDiv.textContent = baseScript.title + ' → ' + newScript.title;
+    let link = document.createElement('a');
+    link.href = 'https://www.botcscripts.com/script/' + newScript.script_id_original;
+    link.target = '_blank';
+    link.textContent = newScript.title + ' (Click here to view script)';
+    link.style.color = '#3b82f6';
+    link.style.textDecoration = 'underline';
+    displayAreaDiv.innerHTML = baseScript.title + ' → ';
+    displayAreaDiv.appendChild(link);
+
     
     const bootleggerText = document.getElementById('bootleggerText');
     bootleggerText.style.color = '#ca2525';
