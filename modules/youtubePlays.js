@@ -401,8 +401,8 @@ function renderVideoRow(video) {
   const date = video.publishedAt ? new Date(video.publishedAt).toLocaleDateString("fr-FR"): "";
   const numberOfViews = video.viewCount ? ` · ${video.viewCount.toLocaleString()} views` : "";
   const channelBadge = video.channel ? ` · ${escapeHtml(video.channel)}`: "";
-  const linkToScript = video.scriptName ? ` · <a href="https://www.botcscripts.com/script/${video.scriptId || ""}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${escapeHtml(video.scriptName)}</a>`
-    : "";
+  //const linkToScript = video.scriptName ? ` · <a href="https://www.botcscripts.com/script/${video.scriptId || ""}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${escapeHtml(video.scriptName)}</a>`
+  //  : "";
 
   return `
     <a href="https://www.youtube.com/watch?v=${video.videoId}"
@@ -422,7 +422,7 @@ function renderVideoRow(video) {
         </p>
 
         <p class="text-xs text-gray-600 dark:text-gray-400">
-          ${date}${channelBadge}${numberOfViews}${linkToScript}
+          ${date}${channelBadge}${numberOfViews}
         </p>
       </div>
     </a>
