@@ -69,7 +69,7 @@ function getScriptsSimilarityHTML() {
 
   `;
 }
-let currentScript = 'null';
+let currentScript = null;
 
 function selectScript(script) {
     currentScript = script;
@@ -123,67 +123,90 @@ function initSlider(){
     }
 }
 
-function findSimilarScripts(script) {
-    if (script=='TB') {
-        scriptContent = base3_json.filter(s => s.title == "Trouble Brewing")[0]
-    }
-    else if (script=='BMR') {
-        scriptContent = base3_json.filter(s => s.title == "Bad Moon Rising")[0]
-    }
-    else if (script == 'SnV'){
-        scriptContent = base3_json.filter(s => s.title == "Sects and Violets")[0]
-    }
+const BASE3 = {
+    TB:  { title: "Trouble Brewing",   travellers: ["scapegoat", "gunslinger", "beggar", "bureaucrat", "thief"] },
+    BMR: { title: "Bad Moon Rising",   travellers: ["butcher", "bonecollector", "harlot", "barista", "deviant"] },
+    SnV: { title: "Sects and Violets", travellers: ["apprentice", "matron", "voudon", "judge", "bishop"] },
+};
 
-    const excludedTeams = getExcludedTeams();
-    const teamByCharacter = new Map();
-    allTokens.forEach(({ id, team }) => {
-        if (!teamByCharacter.has(id)) teamByCharacter.set(id, team);
-    });
-    script_a = filterCharactersByTeam(scriptContent.characters, excludedTeams, teamByCharacter);
-    mostSimilar = []
-    
-    var slider = document.getElementById("slider");
-    threshold = slider.value
-    for (let index = 0; index < scriptsData.length; index++) {
-        script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams, teamByCharacter)
-        if (script_a === script_b) { continue; }
-        IoU = jaccard(script_a,script_b)
-        if (IoU === 1 && !scriptsData[index].bootlegger) {continue;} // Avoid exact same script to appear.
-        if (IoU > threshold/100) {
-            const [added, removed] = difference(script_a, script_b)
-            if (scriptsData[index].bootlegger) {
-                added.push("bootlegger")
-            }
-            mostSimilar.push([scriptsData[index], IoU.toFixed(2), added, removed, scriptContent])
-        }
+function getBaseScript(key) {
+    const def = BASE3[key];
+    const scriptContent = base3_json.find(x => x.title === def.title);
+    if (!scriptContent._travellersAdded) {
+        scriptContent.characters.push(...def.travellers);
+        scriptContent._travellersAdded = true;
     }
-    mostSimilar.sort(function(a,b){return a[1].localeCompare(b[1]);}).reverse();
-    return mostSimilar
+    return scriptContent;
 }
 
-function selectScript(script) {
-    base3 = ['TB','SnV','BMR']
-    base3.forEach(curr_script => {
-        if (script===curr_script) {
-            const selectedScript = document.getElementById(script)
-            selectedScript.style.outline = 'rgb(236, 215, 18) solid 2px';
-        }
-        else {
-            const selectedScript = document.getElementById(curr_script)
-            selectedScript.style.outline = null;
-        }
-    });
-    updateText(script)
-    updateSimilar(script)
+let teamByCharacterCache = null;
+function getTeamByCharacter() {
+    if (!teamByCharacterCache) {
+        teamByCharacterCache = new Map();
+        allTokens.forEach(({ id, team }) => {
+            if (!teamByCharacterCache.has(id)) teamByCharacterCache.set(id, team);
+        });
+    }
+    return teamByCharacterCache;
+}
+
+// Cache to improve performance when filtering sets based on excluded teams. The cache stores the last excluded set and the corresponding filtered sets.
+let filteredCache = { key: null, sets: null };
+function getFilteredSets(excluded) {
+    const key = [...excluded].sort().join(",");
+    if (filteredCache.key === key) return filteredCache.sets;
+    const teamBy = getTeamByCharacter();
+    const sets = scriptsData.map(s =>
+        new Set(s.characters.filter(id => !excluded.has(teamBy.get(id))))
+    );
+    filteredCache = { key, sets };
+    return sets;
+}
+
+function findSimilarScripts(key) {
+    const scriptContent = getBaseScript(key);
+    const excluded = getExcludedTeams();
+    const teamBy = getTeamByCharacter();
+    const setA = new Set(scriptContent.characters.filter(id => !excluded.has(teamBy.get(id))));
+    const sets = getFilteredSets(excluded);
+    const threshold = document.getElementById("slider").value / 100;
+    const sizeA = setA.size;
+    const result = [];
+
+    for (let i = 0; i < sets.length; i++) {
+        const setB = sets[i];
+        const sizeB = setB.size;
+        if (sizeA === 0 || sizeB === 0) continue;
+
+        // Élagage : Jaccard <= min(|A|,|B|) / max(|A|,|B|)
+        if (Math.min(sizeA, sizeB) / Math.max(sizeA, sizeB) <= threshold) continue;
+
+        let inter = 0;
+        for (const id of setA) if (setB.has(id)) inter++;
+        const iou = inter / (sizeA + sizeB - inter);
+
+        if (iou <= threshold) continue;
+        const data = scriptsData[i];
+        if (iou === 1 && !data.bootlegger) continue; // Avoid exact same script to appear.
+
+        const added = [...setB].filter(x => !setA.has(x));
+        const removed = [...setA].filter(x => !setB.has(x));
+        if (data.bootlegger) added.push("bootlegger");
+        result.push([data, iou, added, removed, scriptContent]); // [1] = Jaccard (nombre)
+    }
+
+    result.sort((x, y) => y[1] - x[1]);
+    return result;
 }
 
 function updateSimilar(script) {
-    mostSimilar = findSimilarScripts(script)
+    const mostSimilar = findSimilarScripts(script);
     const chartContainer = document.getElementById('chartContainer');
     const listContainer = document.getElementById('similarityList');
 
     chartContainer.style.display = 'none';
     listContainer.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     mostSimilar.forEach(script => {
         const scriptItem = document.createElement("div");
@@ -195,13 +218,14 @@ function updateSimilar(script) {
         scriptItem.style.color = "var(--module-text-strong)";
         scriptItem.style.backgroundColor = "var(--module-raised-surface)";
         const str = getString(script);
-        scriptItem.textContent = script[0].title + ' (' + script[1]*100 + '%) - ' + str;
-        listContainer.appendChild(scriptItem);
+        scriptItem.textContent = script[0].title + ' (' + Math.round(script[1] * 100) + '%) - ' + str;
+        fragment.appendChild(scriptItem);
         scriptItem.onclick = (e) => {
             e.stopPropagation();
             compareScripts(script[0], script[4], script[2], script[3]);
         };
     });
+    listContainer.appendChild(fragment);
 }
 
 function getString(script) {
@@ -216,19 +240,7 @@ function getString(script) {
 
 function updateText(script) {
     const displayAreaDiv = document.getElementById('textDiv')
-    let scriptContent;
-    if (script == 'TB') {
-        scriptContent = base3_json.filter(s => s.title == "Trouble Brewing")[0];
-        scriptContent.characters.push("scapegoat", "gunslinger", "beggar", "bureaucrat", "thief")
-    }
-    else if (script == 'BMR') {
-        scriptContent = base3_json.filter(s => s.title == "Bad Moon Rising")[0];
-        scriptContent.characters.push("butcher", "bonecollector", "harlot", "barista", "deviant")
-    }
-    else if (script == 'SnV') {
-        scriptContent = base3_json.filter(s => s.title == "Sects and Violets")[0];
-        scriptContent.characters.push("apprentice", "matron", "voudon", "judge", "bishop")
-    }
+    const scriptContent = getBaseScript(script);
 
     displayAreaDiv.textContent = scriptContent.title;
     renderCharacterList(scriptContent);
