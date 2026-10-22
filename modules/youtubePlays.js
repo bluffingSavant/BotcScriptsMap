@@ -441,7 +441,7 @@ function renderScriptGroup(scriptName, videos) {
 
         <span class="flex items-center gap-2">
 
-          <span class="text-xs text-gray-600 dark:text-gray-400">
+          <span class="text-xs text-gray-600 dark:text-gray-200">
             ${videos.length} video${videos.length > 1 ? "s" : ""}
           </span>
 
@@ -489,7 +489,7 @@ function renderChannelGroup(channel, scriptEntries) {
 
         <span class="flex items-center gap-2">
 
-          <span class="text-xs text-gray-600 dark:text-gray-400">
+          <span class="text-xs text-gray-600 dark:text-gray-200">
             ${videoCount} video${videoCount > 1 ? "s" : ""}
           </span>
 
@@ -539,16 +539,16 @@ function getListYoutubeHTML() {
           <div class="flex items-center gap-3">
             <span
               id="nbVideosSpan"
-              class="text-xs text-gray-600 dark:text-gray-400"
+              class="text-xs text-gray-600 dark:text-gray-200"
             ></span>
             <span
               id="youtubeScriptCount"
-              class="text-xs text-gray-600 dark:text-gray-400"
+              class="text-xs text-gray-600 dark:text-gray-200"
             ></span>
 
             <select
               id="youtubeSortSelect"
-              class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-200"
+              class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-white"
             >
               <option value="count">Sort : number of videos</option>
               <option value="channel">Sort : YouTube channel</option>
@@ -560,7 +560,7 @@ function getListYoutubeHTML() {
 
         </div>
         <div id="credits">
-          <p class="text-sm text-gray-600 dark:text-gray-200">
+          <p class="text-sm text-gray-600 dark:text-white">
             Special thanks to reddit user @iljitsch275 for curating BoTC playlists. 
           </p>
         </div>
