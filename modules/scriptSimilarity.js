@@ -1,7 +1,7 @@
 function getScriptsSimilarityHTML() {
   return `
     
-    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-5 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+    <section class="module-page home-intro-card bg-white dark:bg-[#1f2937] grid grid-cols-6 gap-8 rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
         
         <div id="TB" onclick="selectScript('TB')"
             class="bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5 card-hover flex items-center justify-center">
@@ -23,7 +23,7 @@ function getScriptsSimilarityHTML() {
                 alt="Sects and Violets"
                 class="max-h-64 w-auto object-contain">
         </div>
-        <div id="similarityDiv" class="col-span-2 bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
+        <div id="similarityDiv" class="col-span-3 bg-white dark:bg-[#1f2937] rounded-2xl shadow-sm border border-gray-100/80 dark:border-gray-700 p-5">
             <label class="toggle">
                 <input type="checkbox" id="btnTravellers" name="btnToggle" />
                 <span class="slider bg-white">Include travellers</span>
@@ -135,13 +135,17 @@ function findSimilarScripts(script) {
     }
 
     const excludedTeams = getExcludedTeams();
-    script_a = filterCharactersByTeam(scriptContent.characters, excludedTeams);
+    const teamByCharacter = new Map();
+    allTokens.forEach(({ id, team }) => {
+        if (!teamByCharacter.has(id)) teamByCharacter.set(id, team);
+    });
+    script_a = filterCharactersByTeam(scriptContent.characters, excludedTeams, teamByCharacter);
     mostSimilar = []
     
     var slider = document.getElementById("slider");
     threshold = slider.value
     for (let index = 0; index < scriptsData.length; index++) {
-        script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams)
+        script_b = filterCharactersByTeam(scriptsData[index].characters, excludedTeams, teamByCharacter)
         if (script_a === script_b) { continue; }
         IoU = jaccard(script_a,script_b)
         if (IoU === 1 && !scriptsData[index].bootlegger) {continue;} // Avoid exact same script to appear.
@@ -252,10 +256,9 @@ function getExcludedTeams() {
     return excluded;
 }
 
-function filterCharactersByTeam(characters, excludedTeams) {
+function filterCharactersByTeam(characters, excludedTeams, teamByCharacter) {
     return characters.filter(charId => {
-        const team = allTokens.filter(c => c.id === charId).map(c => c.team)[0];
-        return !excludedTeams.has(team);
+        return !excludedTeams.has(teamByCharacter.get(charId));
     });
 }
 
