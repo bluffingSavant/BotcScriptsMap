@@ -398,17 +398,10 @@ function escapeHtml(str) {
 
 
 function renderVideoRow(video) {
-  const date = video.publishedAt
-    ? new Date(video.publishedAt).toLocaleDateString("fr-FR")
-    : "";
-
+  const date = video.publishedAt ? new Date(video.publishedAt).toLocaleDateString("fr-FR"): "";
   const numberOfViews = video.viewCount ? ` · ${video.viewCount.toLocaleString()} views` : "";
-
-  const channelBadge = video.channel
-    ? ` · ${escapeHtml(video.channel)}`
-    : "";
-  const linkToScript = video.scriptName
-    ? ` · <a href="https://www.botcscripts.com/script/${video.scriptId || ""}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${escapeHtml(video.scriptName)}</a>`
+  const channelBadge = video.channel ? ` · ${escapeHtml(video.channel)}`: "";
+  const linkToScript = video.scriptName ? ` · <a href="https://www.botcscripts.com/script/${video.scriptId || ""}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 hover:underline">${escapeHtml(video.scriptName)}</a>`
     : "";
 
   return `
@@ -435,7 +428,6 @@ function renderVideoRow(video) {
     </a>
   `;
 }
-
 
 function renderScriptGroup(scriptName, videos) {
   return `
