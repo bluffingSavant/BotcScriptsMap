@@ -548,7 +548,7 @@ function getListYoutubeHTML() {
 
             <select
               id="youtubeSortSelect"
-              class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300"
+              class="text-xs bg-gray-50 dark:bg-[#111827] border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-gray-600 dark:text-gray-200"
             >
               <option value="count">Sort : number of videos</option>
               <option value="channel">Sort : YouTube channel</option>
@@ -560,7 +560,7 @@ function getListYoutubeHTML() {
 
         </div>
         <div id="credits">
-          <p class="text-sm text-gray-600 dark:text-gray-400">
+          <p class="text-sm text-gray-600 dark:text-gray-200">
             Special thanks to reddit user @iljitsch275 for curating BoTC playlists. 
           </p>
         </div>
@@ -646,7 +646,6 @@ function renderYoutubeList(mode) {
 async function initListYoutube() {
   const listDiv = document.getElementById("youtubeList");
   const sortSelect = document.getElementById("youtubeSortSelect");
-  console.log("Initializing YouTube list...");
   if (!listDiv) return;
 
   try {
