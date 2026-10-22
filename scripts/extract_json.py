@@ -38,17 +38,19 @@ session.headers.update({
 # ============================================================
 # UTILITIES
 # ============================================================
-def request_json(url, params=None):
-    """
-    Perform an HTTP request and return the JSON response.
-    """
-    response = session.get(
-        url,
-        params=params,
-        timeout=TIMEOUT,
-    )
-    response.raise_for_status()
-    return response.json()
+def request_json(url, params=None, retries=3):
+    for attempt in range(1, retries + 1):
+        response = session.get(url, params=params, timeout=TIMEOUT)
+        if response.status_code in (429, 502, 503, 504) and attempt < retries:
+            time.sleep(2 ** attempt)
+            continue
+        if not response.ok:
+            print(f"HTTP {response.status_code} for {response.url}")
+            print({k: v for k, v in response.headers.items()
+                   if k.lower() in ("server", "cf-ray", "cf-mitigated", "retry-after")})
+            print(response.text[:300])
+        response.raise_for_status()
+        return response.json()
 
 
 def load_state():
