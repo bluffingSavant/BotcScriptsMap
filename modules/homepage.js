@@ -26,7 +26,7 @@ function initHomePage() {
       </ul>
       <br />
       This is still Work In Progress and suggestions are welcome on the <a href=https://www.reddit.com/r/BloodOnTheClocktower/comments/1vx09zu/a_new_tool_to_find_scripts/><span style='color: red;'>reddit thread<span style='color: red;'></a>.<br />
-      Last update of the database: 4 September 2026
+      Last update of the database: 22 october 2026
     `;
   }
 }
