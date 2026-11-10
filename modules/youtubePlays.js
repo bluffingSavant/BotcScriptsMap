@@ -22,11 +22,13 @@ async function loadYoutubeVideosData() {
 // Script identification
 // ============================================================
 
-// Extract the script ID from a botcscripts.com URL.
+// Extract the base script ID; any version segment after the ID is ignored.
 function extractScriptId(description) {
   if (!description) return null;
 
-  const match = description.match(/botcscripts\.com\/script\/(\d+)/i);
+  const match = description.match(
+    /botcscripts\.com\/script\/(\d+)(?:\/[^/?#\s]*)?/i
+  );
   return match ? Number(match[1]) : null;
 }
 
@@ -58,18 +60,32 @@ function extractScriptNameFromDescription(description) {
 }
 
 
-// Build an index from script ID to script title.
-function buildScriptsTitleIndex() {
-  const index = new Map();
+function getLatestScriptsById() {
+  const latestScriptsById = new Map();
 
   (scriptsData || []).forEach((script) => {
     if (script.script_id_original == null) return;
 
-    const title = script.title;
+    // The extracted index orders newer version records under higher primary keys.
+    const scriptId = Number(script.script_id_original);
+    const current = latestScriptsById.get(scriptId);
 
-    if (!title) return;
+    if (!current || Number(script.pk) > Number(current.pk)) {
+      latestScriptsById.set(scriptId, script);
+    }
+  });
 
-    index.set(Number(script.script_id_original), title);
+  return latestScriptsById;
+}
+
+
+// Build an index from script ID to the latest version's title.
+function buildScriptsTitleIndex() {
+  const index = new Map();
+  const latestScriptsById = getLatestScriptsById();
+
+  latestScriptsById.forEach((script, scriptId) => {
+    if (script.title) index.set(scriptId, script.title);
   });
 
   return index;
@@ -80,18 +96,23 @@ function buildScriptsTitleIndex() {
 // title stored in scriptsData.
 //
 // This makes matching robust to differences in capitalization,
-// spaces and punctuation.
+// spaces and punctuation. Old version titles resolve to the latest title.
 function buildScriptsNameIndex() {
   const index = new Map();
+  const latestScriptsById = getLatestScriptsById();
 
   (scriptsData || []).forEach((script) => {
     if (!script.title) return;
 
-    const normalizedTitle = normalizeScriptName(script.title);
+    const canonicalScript = script.script_id_original == null
+      ? script
+      : latestScriptsById.get(Number(script.script_id_original));
+    if (!canonicalScript || !canonicalScript.title) return;
 
+    const normalizedTitle = normalizeScriptName(script.title);
     if (!normalizedTitle) return;
 
-    index.set(normalizedTitle, script.title);
+    index.set(normalizedTitle, canonicalScript.title);
   });
 
   return index;

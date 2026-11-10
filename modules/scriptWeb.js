@@ -23,7 +23,19 @@ let scriptsLinksLoaded = false;
 
 function buildScriptsByCharacter() {
   scriptsByCharacter = {};
+  const latestScriptsById = new Map();
+
   scriptsData.forEach(script => {
+    const scriptId = script.script_id_original == null
+      ? `pk:${script.pk}`
+      : `script:${Number(script.script_id_original)}`;
+    const current = latestScriptsById.get(scriptId);
+    if (!current || Number(script.pk) > Number(current.pk)) {
+      latestScriptsById.set(scriptId, script);
+    }
+  });
+
+  latestScriptsById.forEach(script => {
     script.characters.forEach(charId => {
       if (!scriptsByCharacter[charId]) scriptsByCharacter[charId] = [];
       scriptsByCharacter[charId].push(script);
