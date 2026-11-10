@@ -502,7 +502,7 @@ function updateScriptsList() {
     openBtn.style.background = "var(--module-control-surface)";
     openBtn.onclick = (e) => {
       e.stopPropagation();
-      const url = `https://www.botcscripts.com/script/${script.script_id_original}/${script.version}`;
+      const url = `https://www.botcscripts.com/script/${script.script_id_original}`;
       window.open(url, "_blank");
     };
     item.appendChild(copyBtn);
